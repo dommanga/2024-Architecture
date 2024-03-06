@@ -12,7 +12,7 @@ module alu #(parameter data_width = 16) (
 /*
 	YOUR VARIABLE DECLARATION...
 */
- 
+
 initial begin
 	C = 0;
 	OverflowFlag = 0;
