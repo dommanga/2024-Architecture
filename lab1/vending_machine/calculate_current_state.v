@@ -25,7 +25,11 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		// TODO: current_total_nxt
 		// You don't have to worry about concurrent activations in each input vector (or array).
 		// Calculate the next current_total state.
-		
+
+		// if input coin --> update input_total //
+		// current_total_nxt update
+		// select_item && avail --> current_total_nxt - price
+
 	end
 
 	
@@ -34,6 +38,9 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 	always @(*) begin
 		// TODO: o_available_item
 		// TODO: o_output_item
+
+		// if current_total enough --> update o_avail_item
+		// if i_select_item && avail --> o_output_item
 
 	end
  

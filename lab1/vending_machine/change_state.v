@@ -12,9 +12,13 @@ module change_state(clk,reset_n,current_total_nxt,current_total);
 	always @(posedge clk ) begin
 		if (!reset_n) begin
 			// TODO: reset all states.
+
+			//reset current_total(0)
 		end
 		else begin
 			// TODO: update all states.
+			
+			// update current_total to current_total_nxt
 		end
 	end
 endmodule 
