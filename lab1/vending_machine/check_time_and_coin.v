@@ -15,6 +15,8 @@ module check_time_and_coin(i_input_coin,i_select_item,clk,reset_n,wait_time,o_re
 		// TODO: initiate values
 
 		// initiate o_return_coin(0000), wait_time(100) //
+		o_return_coin = `kNumCoins'b0;
+		wait_time = 100;
 	end
 
 
@@ -36,11 +38,14 @@ module check_time_and_coin(i_input_coin,i_select_item,clk,reset_n,wait_time,o_re
 		// TODO: reset all states.
 
 		// reset all output value //
+		o_return_coin <= `kNumCoins'b001; //여기 나중에 바꿔야함!!//
+		wait_time <= 100;
 		end
 		else begin
 		// TODO: update all states.
 
 		// update output value - wait_time decresing //
+		wait_time <= wait_time - 1;
 		end
 	end
 endmodule 

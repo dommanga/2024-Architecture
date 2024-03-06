@@ -54,13 +54,15 @@ module vending_machine (
 
 	
 	// Variables. You may add more your own net variables.
-	wire [`kTotalBits-1:0] input_total, output_total, return_total;
+	//wire [`kTotalBits-1:0] input_total, output_total, return_total;
 	wire [31:0] wait_time;
 
 
 	// This module interface, structure, and given a number of modules are not mandatory but recommended.
 	// However, Implementations that use modules are mandatory.
-		
+	wire ret;
+	assign ret = i_trigger_return;
+	assign ret = ret;
   	check_time_and_coin check_time_and_coin_module(.i_input_coin(i_input_coin),
   									.i_select_item(i_select_item),
 									.clk(clk),
@@ -73,9 +75,9 @@ module vending_machine (
 										.item_price(item_price),
 										.coin_value(coin_value),
 										.current_total(current_total),
-										.input_total(input_total),
+										/*.input_total(input_total),
 										.output_total(output_total),
-										.return_total(return_total),
+										.return_total(return_total),*/
 										.current_total_nxt(current_total_nxt),
 										.wait_time(wait_time),
 										.o_return_coin(o_return_coin),
