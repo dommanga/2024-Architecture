@@ -14,7 +14,6 @@ module check_time_and_coin(i_input_coin,i_select_item,clk,reset_n,wait_time,o_re
 	initial begin
 		// TODO: initiate values
 
-		// initiate o_return_coin(0000), wait_time(100) //
 		o_return_coin = `kNumCoins'b0;
 		wait_time = `kWaitTime;
 	end
@@ -30,7 +29,6 @@ module check_time_and_coin(i_input_coin,i_select_item,clk,reset_n,wait_time,o_re
 	always @(*) begin
 		// TODO: o_return_coin
 
-		// NOT SURE if select item and avail, subtract price of item from the o_return_coin
 	end
 
 	always @(posedge clk ) begin
@@ -38,10 +36,10 @@ module check_time_and_coin(i_input_coin,i_select_item,clk,reset_n,wait_time,o_re
 		// TODO: reset all states.
 
 		// reset all output value //
-		o_return_coin <= `kNumCoins'b001; //여기 나중에 바꿔야함!!//
+		o_return_coin <= `kNumCoins'b001; //revise later
 		wait_time <= `kWaitTime;
 		end
-		else if (i_input_coin > 0 || i_select_item > 0)
+		if (i_input_coin > 0 || i_select_item > 0)
 			wait_time <= `kWaitTime;
 		else begin
 		// TODO: update all states.

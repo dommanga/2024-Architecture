@@ -22,6 +22,9 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		input_total = 0;
 		output_total = 0;
 		return_total = input_total - output_total;
+		//need to revise
+		if (wait_time == 0 && o_return_coin > 0)
+			return_total = 0;
 	end
 
 	// Combinational logic for the next states
@@ -32,30 +35,21 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		
 		case (current_total)
 			`S0_init:
-				if(i_input_coin > 0) 
-					current_total_nxt = `S1_wait;
+				current_total_nxt = `S1_wait;
 			`S1_wait:
-				if(i_select_item > 0) 
-					current_total_nxt = `S2_select;
-				else if(wait_time == 0) 
-					current_total_nxt = `S3_return;
-				// else
-				// 	current_total_nxt = `S1_wait;
-			`S2_select:
+				if(i_input_coin > 0) 
+					current_total_nxt = `S2_coin;
+				else if(i_select_item > 0) 
+					current_total_nxt = `S3_select;
+			`S2_coin:
+				current_total_nxt = `S1_wait;
+			`S3_select:
 				if (o_available_item > 0) 
-					current_total_nxt = `S1_wait;
-				else if (wait_time == 0)
-					current_total_nxt = `S3_return;
+					current_total_nxt = `S2_coin;
 				else if (input_total > output_total)
-					current_total_nxt = `S1_wait;
+					current_total_nxt = `S2_coin;
 				else
 					current_total_nxt = `S0_init;
-			`S3_return: begin
-				if (o_return_coin == 0)
-					current_total_nxt = `S0_init;
-				else
-					current_total_nxt = `S3_return;
-			end
 			default: begin current_total_nxt = `S0_init; end
 		endcase
 		
@@ -67,7 +61,7 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 	always @(*) begin
 		// TODO: o_available_item
 		// TODO: o_output_item
-
+		//$monitor("state: %h, coin: %h", current_total, input_total);
 		case (current_total)
 			`S0_init: begin
 				input_total = 0;
@@ -76,10 +70,6 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 				o_available_item = 0;
 			end
 			`S1_wait: begin
-				for (i = 0; i < `kNumCoins; i = i+1) begin
-					if (i_input_coin[i])
-						input_total = input_total + coin_value[i];
-				end
 				for (i = 0; i < `kNumItems; i = i+1) begin
 					if (input_total - output_total >= item_price[i])
 						o_available_item[i] = 1;
@@ -87,15 +77,23 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 						o_available_item[i] = 0;
 				end
 			end
-			`S2_select: begin
+			`S2_coin: begin
+				for (i = 0; i < `kNumCoins; i = i+1) begin
+					if (i_input_coin[i])
+						input_total = input_total + coin_value[i] / 2;
+				end
+			end
+			`S3_select: begin
 				for (i = 0; i < `kNumItems; i = i+1) begin
 					if (i_select_item[i] && o_available_item[i]) begin
 						o_output_item[i] = 1;
-						output_total = output_total + item_price[i];
+						output_total = output_total + item_price[i] / 2;
+					end
+					else begin
+						o_output_item[i] = 0;
 					end
 				end
 			end
-			`S3_return: return_total = input_total - output_total;
 			default: return_total = input_total - output_total;
 		endcase
 

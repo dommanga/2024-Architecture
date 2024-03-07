@@ -15,5 +15,5 @@
 
 `define S0_init 32'h00
 `define S1_wait 32'h01
-`define S2_select 32'h02
-`define S3_return 32'h03
+`define S2_coin 32'h02
+`define S3_select 32'h03
