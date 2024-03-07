@@ -18,9 +18,14 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 	output reg  [`kTotalBits-1:0] current_total_nxt;
 	integer i;	
 
+	reg  [`kTotalBits-1:0] INPUT_tot;
+
 	initial begin
 		input_total = 0;
 		output_total = 0;
+
+		INPUT_tot = 0;
+
 		return_total = input_total - output_total;
 		//need to revise
 		if (wait_time == 0 && o_return_coin > 0)
@@ -45,9 +50,9 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 				current_total_nxt = `S1_wait;
 			`S3_select:
 				if (o_available_item > 0) 
-					current_total_nxt = `S2_coin;
+					current_total_nxt = `S1_wait;
 				else if (input_total > output_total)
-					current_total_nxt = `S2_coin;
+					current_total_nxt = `S1_wait;
 				else
 					current_total_nxt = `S0_init;
 			default: begin current_total_nxt = `S0_init; end
@@ -55,7 +60,6 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		
 	end
 
-	
 	
 	// Combinational logic for the outputs
 	always @(*) begin
@@ -65,6 +69,7 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		case (current_total)
 			`S0_init: begin
 				input_total = 0;
+				INPUT_tot = 0;
 				output_total = 0;
 				return_total = 0;
 				o_available_item = 0;
@@ -79,9 +84,12 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 			end
 			`S2_coin: begin
 				for (i = 0; i < `kNumCoins; i = i+1) begin
-					if (i_input_coin[i])
+					if (i_input_coin[i]) begin
 						input_total = input_total + coin_value[i] / 2;
+						
+					end
 				end
+				INPUT_tot = INPUT_tot + coin_value[0];
 			end
 			`S3_select: begin
 				for (i = 0; i < `kNumItems; i = i+1) begin
