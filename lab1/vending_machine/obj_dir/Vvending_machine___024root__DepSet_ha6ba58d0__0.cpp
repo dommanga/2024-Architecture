@@ -147,26 +147,26 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
     (void)vlSelf;  // Prevent unused variable warning
     Vvending_machine__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vvending_machine___024root___nba_sequent__TOP__0\n"); );
-    // Init
-    IData/*31:0*/ __Vdly__vending_machine__DOT__wait_time;
-    __Vdly__vending_machine__DOT__wait_time = 0;
     // Body
-    __Vdly__vending_machine__DOT__wait_time = vlSelf->vending_machine__DOT__wait_time;
+    if (vlSelf->reset_n) {
+        vlSelf->vending_machine__DOT__wait_time = (
+                                                   ((0U 
+                                                     < (IData)(vlSelf->i_input_coin)) 
+                                                    | (0U 
+                                                       < (IData)(vlSelf->i_select_item)))
+                                                    ? 0xaU
+                                                    : 
+                                                   (vlSelf->vending_machine__DOT__wait_time 
+                                                    - (IData)(1U)));
+        vlSelf->vending_machine__DOT__current_total 
+            = vlSelf->vending_machine__DOT__current_total_nxt;
+    } else {
+        vlSelf->vending_machine__DOT__wait_time = 0xaU;
+        vlSelf->vending_machine__DOT__current_total = 0U;
+    }
     if ((1U & (~ (IData)(vlSelf->reset_n)))) {
-        __Vdly__vending_machine__DOT__wait_time = 0xaU;
         vlSelf->o_return_coin = 1U;
     }
-    __Vdly__vending_machine__DOT__wait_time = (((0U 
-                                                 < (IData)(vlSelf->i_input_coin)) 
-                                                | (0U 
-                                                   < (IData)(vlSelf->i_select_item)))
-                                                ? 0xaU
-                                                : (vlSelf->vending_machine__DOT__wait_time 
-                                                   - (IData)(1U)));
-    vlSelf->vending_machine__DOT__current_total = ((IData)(vlSelf->reset_n)
-                                                    ? vlSelf->vending_machine__DOT__current_total_nxt
-                                                    : 0U);
-    vlSelf->vending_machine__DOT__wait_time = __Vdly__vending_machine__DOT__wait_time;
     if ((0U != vlSelf->vending_machine__DOT__current_total)) {
         if ((1U == vlSelf->vending_machine__DOT__current_total)) {
             vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 4U;

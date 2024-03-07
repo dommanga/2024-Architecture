@@ -39,7 +39,7 @@ module check_time_and_coin(i_input_coin,i_select_item,clk,reset_n,wait_time,o_re
 		o_return_coin <= `kNumCoins'b001; //revise later
 		wait_time <= `kWaitTime;
 		end
-		if (i_input_coin > 0 || i_select_item > 0)
+		else if (i_input_coin > 0 || i_select_item > 0)
 			wait_time <= `kWaitTime;
 		else begin
 		// TODO: update all states.
