@@ -10,77 +10,104 @@ VL_INLINE_OPT void Vvending_machine___024root___ico_sequent__TOP__0(Vvending_mac
     Vvending_machine__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vvending_machine___024root___ico_sequent__TOP__0\n"); );
     // Body
-    vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 1U) | 
-                                   (vlSelf->vending_machine__DOT__current_total 
-                                    >= vlSelf->vending_machine__DOT__item_price
-                                    [0U])));
-    vlSelf->o_available_item = ((3U & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 3U) | 
-                                   ((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 2U)));
-    vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 1U) | 
-                                   (vlSelf->vending_machine__DOT__current_total 
-                                    >= vlSelf->vending_machine__DOT__item_price
-                                    [0U])));
-    vlSelf->o_available_item = ((3U & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 3U) | 
-                                   ((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 2U)));
-    vlSelf->o_output_item = ((IData)(vlSelf->i_select_item) 
-                             & (IData)(vlSelf->o_available_item));
-    vlSelf->o_output_item = ((IData)(vlSelf->i_select_item) 
-                             & (IData)(vlSelf->o_available_item));
-    vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
-    if ((1U & (IData)(vlSelf->i_input_coin))) {
+    if ((0U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__input_total = 0U;
+        vlSelf->vending_machine__DOT__output_total = 0U;
+        vlSelf->vending_machine__DOT__return_total = 0U;
+        vlSelf->o_available_item = 0U;
+        if ((0U < (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 1U;
+        }
+    } else if ((1U == vlSelf->vending_machine__DOT__current_total)) {
+        if ((1U & (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__input_total 
+                = (vlSelf->vending_machine__DOT__input_total 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [0U]);
+        }
+        if ((2U & (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__input_total 
+                = (vlSelf->vending_machine__DOT__input_total 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [1U]);
+        }
+        if ((4U & (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__input_total 
+                = (vlSelf->vending_machine__DOT__input_total 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [2U]);
+        }
+        vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
+                                    | ((((vlSelf->vending_machine__DOT__input_total 
+                                          - vlSelf->vending_machine__DOT__output_total) 
+                                         >= vlSelf->vending_machine__DOT__item_price
+                                         [1U]) << 1U) 
+                                       | ((vlSelf->vending_machine__DOT__input_total 
+                                           - vlSelf->vending_machine__DOT__output_total) 
+                                          >= vlSelf->vending_machine__DOT__item_price
+                                          [0U])));
+        vlSelf->o_available_item = ((3U & (IData)(vlSelf->o_available_item)) 
+                                    | ((((vlSelf->vending_machine__DOT__input_total 
+                                          - vlSelf->vending_machine__DOT__output_total) 
+                                         >= vlSelf->vending_machine__DOT__item_price
+                                         [3U]) << 3U) 
+                                       | (((vlSelf->vending_machine__DOT__input_total 
+                                            - vlSelf->vending_machine__DOT__output_total) 
+                                           >= vlSelf->vending_machine__DOT__item_price
+                                           [2U]) << 2U)));
+        if ((0U < (IData)(vlSelf->i_select_item))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 2U;
+        } else if ((0U == vlSelf->vending_machine__DOT__wait_time)) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 3U;
+        }
+    } else if ((2U == vlSelf->vending_machine__DOT__current_total)) {
+        if ((1U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [0U]);
+            vlSelf->o_output_item = (1U | (IData)(vlSelf->o_output_item));
+        }
+        if ((2U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [1U]);
+            vlSelf->o_output_item = (2U | (IData)(vlSelf->o_output_item));
+        }
+        if ((4U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [2U]);
+            vlSelf->o_output_item = (4U | (IData)(vlSelf->o_output_item));
+        }
+        if ((8U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [3U]);
+            vlSelf->o_output_item = (8U | (IData)(vlSelf->o_output_item));
+        }
         vlSelf->vending_machine__DOT__current_total_nxt 
-            = (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__coin_value
-               [0U]);
-        vlSelf->o_available_item = (1U | (IData)(vlSelf->o_available_item));
+            = ((0U < (IData)(vlSelf->o_available_item))
+                ? 1U : ((0U == vlSelf->vending_machine__DOT__wait_time)
+                         ? 3U : ((vlSelf->vending_machine__DOT__input_total 
+                                  > vlSelf->vending_machine__DOT__output_total)
+                                  ? 1U : 0U)));
+    } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__return_total 
+            = (vlSelf->vending_machine__DOT__input_total 
+               - vlSelf->vending_machine__DOT__output_total);
+        vlSelf->vending_machine__DOT__current_total_nxt 
+            = ((0U == (IData)(vlSelf->o_return_coin))
+                ? 0U : 3U);
     } else {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = vlSelf->vending_machine__DOT__current_total;
-        vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
+        vlSelf->vending_machine__DOT__return_total 
+            = (vlSelf->vending_machine__DOT__input_total 
+               - vlSelf->vending_machine__DOT__output_total);
+        vlSelf->vending_machine__DOT__current_total_nxt = 0U;
     }
-    if ((2U & (IData)(vlSelf->i_input_coin))) {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__coin_value
-               [1U]);
-        vlSelf->o_available_item = (1U | (IData)(vlSelf->o_available_item));
-    } else {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = vlSelf->vending_machine__DOT__current_total;
-        vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
-    }
-    if ((4U & (IData)(vlSelf->i_input_coin))) {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__coin_value
-               [2U]);
-        vlSelf->o_available_item = (1U | (IData)(vlSelf->o_available_item));
-    } else {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = vlSelf->vending_machine__DOT__current_total;
-        vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
-    }
-    vlSelf->vending_machine__DOT__current_total_nxt 
-        = ((8U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))
-            ? (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__item_price
-               [3U]) : vlSelf->vending_machine__DOT__current_total);
 }
 
 void Vvending_machine___024root___eval_ico(Vvending_machine___024root* vlSelf) {
@@ -122,88 +149,129 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vvending_machine___024root___nba_sequent__TOP__0\n"); );
     // Body
     if (vlSelf->reset_n) {
-        vlSelf->vending_machine__DOT__wait_time = (vlSelf->vending_machine__DOT__wait_time 
-                                                   - (IData)(1U));
+        vlSelf->vending_machine__DOT__wait_time = (
+                                                   ((0U 
+                                                     < (IData)(vlSelf->i_input_coin)) 
+                                                    | (0U 
+                                                       < (IData)(vlSelf->i_select_item)))
+                                                    ? 0xaU
+                                                    : 
+                                                   (vlSelf->vending_machine__DOT__wait_time 
+                                                    - (IData)(1U)));
         vlSelf->vending_machine__DOT__current_total 
             = vlSelf->vending_machine__DOT__current_total_nxt;
     } else {
-        vlSelf->vending_machine__DOT__wait_time = 0x64U;
+        vlSelf->vending_machine__DOT__wait_time = 0xaU;
         vlSelf->vending_machine__DOT__current_total = 0U;
     }
     if ((1U & (~ (IData)(vlSelf->reset_n)))) {
         vlSelf->o_return_coin = 1U;
     }
-    vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 1U) | 
-                                   (vlSelf->vending_machine__DOT__current_total 
-                                    >= vlSelf->vending_machine__DOT__item_price
-                                    [0U])));
-    vlSelf->o_available_item = ((3U & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 3U) | 
-                                   ((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 2U)));
-    vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 1U) | 
-                                   (vlSelf->vending_machine__DOT__current_total 
-                                    >= vlSelf->vending_machine__DOT__item_price
-                                    [0U])));
-    vlSelf->o_available_item = ((3U & (IData)(vlSelf->o_available_item)) 
-                                | (((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 3U) | 
-                                   ((vlSelf->vending_machine__DOT__current_total 
-                                     >= vlSelf->vending_machine__DOT__item_price
-                                     [0U]) << 2U)));
-    vlSelf->o_output_item = ((IData)(vlSelf->i_select_item) 
-                             & (IData)(vlSelf->o_available_item));
-    vlSelf->o_output_item = ((IData)(vlSelf->i_select_item) 
-                             & (IData)(vlSelf->o_available_item));
-    vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
-    if ((1U & (IData)(vlSelf->i_input_coin))) {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__coin_value
-               [0U]);
-        vlSelf->o_available_item = (1U | (IData)(vlSelf->o_available_item));
-    } else {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = vlSelf->vending_machine__DOT__current_total;
-        vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
+    if ((0U != vlSelf->vending_machine__DOT__current_total)) {
+        if ((1U == vlSelf->vending_machine__DOT__current_total)) {
+            vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 4U;
+        } else if ((2U == vlSelf->vending_machine__DOT__current_total)) {
+            vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 4U;
+        }
     }
-    if ((2U & (IData)(vlSelf->i_input_coin))) {
+    if ((0U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__input_total = 0U;
+        vlSelf->vending_machine__DOT__output_total = 0U;
+        vlSelf->vending_machine__DOT__return_total = 0U;
+        vlSelf->o_available_item = 0U;
+        if ((0U < (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 1U;
+        }
+    } else if ((1U == vlSelf->vending_machine__DOT__current_total)) {
+        if ((1U & (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__input_total 
+                = (vlSelf->vending_machine__DOT__input_total 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [0U]);
+        }
+        if ((2U & (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__input_total 
+                = (vlSelf->vending_machine__DOT__input_total 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [1U]);
+        }
+        if ((4U & (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__input_total 
+                = (vlSelf->vending_machine__DOT__input_total 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [2U]);
+        }
+        vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
+                                    | ((((vlSelf->vending_machine__DOT__input_total 
+                                          - vlSelf->vending_machine__DOT__output_total) 
+                                         >= vlSelf->vending_machine__DOT__item_price
+                                         [1U]) << 1U) 
+                                       | ((vlSelf->vending_machine__DOT__input_total 
+                                           - vlSelf->vending_machine__DOT__output_total) 
+                                          >= vlSelf->vending_machine__DOT__item_price
+                                          [0U])));
+        vlSelf->o_available_item = ((3U & (IData)(vlSelf->o_available_item)) 
+                                    | ((((vlSelf->vending_machine__DOT__input_total 
+                                          - vlSelf->vending_machine__DOT__output_total) 
+                                         >= vlSelf->vending_machine__DOT__item_price
+                                         [3U]) << 3U) 
+                                       | (((vlSelf->vending_machine__DOT__input_total 
+                                            - vlSelf->vending_machine__DOT__output_total) 
+                                           >= vlSelf->vending_machine__DOT__item_price
+                                           [2U]) << 2U)));
+        if ((0U < (IData)(vlSelf->i_select_item))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 2U;
+        } else if ((0U == vlSelf->vending_machine__DOT__wait_time)) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 3U;
+        }
+    } else if ((2U == vlSelf->vending_machine__DOT__current_total)) {
+        if ((1U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [0U]);
+            vlSelf->o_output_item = (1U | (IData)(vlSelf->o_output_item));
+        }
+        if ((2U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [1U]);
+            vlSelf->o_output_item = (2U | (IData)(vlSelf->o_output_item));
+        }
+        if ((4U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [2U]);
+            vlSelf->o_output_item = (4U | (IData)(vlSelf->o_output_item));
+        }
+        if ((8U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
+            vlSelf->vending_machine__DOT__output_total 
+                = (vlSelf->vending_machine__DOT__output_total 
+                   + vlSelf->vending_machine__DOT__item_price
+                   [3U]);
+            vlSelf->o_output_item = (8U | (IData)(vlSelf->o_output_item));
+        }
         vlSelf->vending_machine__DOT__current_total_nxt 
-            = (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__coin_value
-               [1U]);
-        vlSelf->o_available_item = (1U | (IData)(vlSelf->o_available_item));
+            = ((0U < (IData)(vlSelf->o_available_item))
+                ? 1U : ((0U == vlSelf->vending_machine__DOT__wait_time)
+                         ? 3U : ((vlSelf->vending_machine__DOT__input_total 
+                                  > vlSelf->vending_machine__DOT__output_total)
+                                  ? 1U : 0U)));
+    } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__return_total 
+            = (vlSelf->vending_machine__DOT__input_total 
+               - vlSelf->vending_machine__DOT__output_total);
+        vlSelf->vending_machine__DOT__current_total_nxt 
+            = ((0U == (IData)(vlSelf->o_return_coin))
+                ? 0U : 3U);
     } else {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = vlSelf->vending_machine__DOT__current_total;
-        vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
+        vlSelf->vending_machine__DOT__return_total 
+            = (vlSelf->vending_machine__DOT__input_total 
+               - vlSelf->vending_machine__DOT__output_total);
+        vlSelf->vending_machine__DOT__current_total_nxt = 0U;
     }
-    if ((4U & (IData)(vlSelf->i_input_coin))) {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__coin_value
-               [2U]);
-        vlSelf->o_available_item = (1U | (IData)(vlSelf->o_available_item));
-    } else {
-        vlSelf->vending_machine__DOT__current_total_nxt 
-            = vlSelf->vending_machine__DOT__current_total;
-        vlSelf->o_available_item = (0xeU & (IData)(vlSelf->o_available_item));
-    }
-    vlSelf->vending_machine__DOT__current_total_nxt 
-        = ((8U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))
-            ? (vlSelf->vending_machine__DOT__current_total 
-               + vlSelf->vending_machine__DOT__item_price
-               [3U]) : vlSelf->vending_machine__DOT__current_total);
 }
 
 void Vvending_machine___024root___eval_nba(Vvending_machine___024root* vlSelf) {
@@ -213,6 +281,7 @@ void Vvending_machine___024root___eval_nba(Vvending_machine___024root* vlSelf) {
     // Body
     if ((1ULL & vlSelf->__VnbaTriggered.word(0U))) {
         Vvending_machine___024root___nba_sequent__TOP__0(vlSelf);
+        vlSelf->__Vm_traceActivity[1U] = 1U;
     }
 }
 

@@ -12,3 +12,8 @@
 `define kNumCoins 3
 
 `define kWaitTime 10
+
+`define S0_init 32'h00
+`define S1_wait 32'h01
+`define S2_select 32'h02
+`define S3_return 32'h03
