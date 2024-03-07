@@ -116,8 +116,6 @@ VL_ATTR_COLD void Vvending_machine___024root___stl_sequent__TOP__0(Vvending_mach
         vlSelf->vending_machine__DOT__input_total = 0U;
         vlSelf->vending_machine__DOT__output_total = 0U;
         vlSelf->vending_machine__DOT__return_total = 0U;
-        vlSelf->o_available_item = 0U;
-        vlSelf->vending_machine__DOT__current_total_nxt = 1U;
     } else {
         if ((1U != vlSelf->vending_machine__DOT__current_total)) {
             if ((2U == vlSelf->vending_machine__DOT__current_total)) {
@@ -149,31 +147,25 @@ VL_ATTR_COLD void Vvending_machine___024root___stl_sequent__TOP__0(Vvending_mach
                                                >= vlSelf->vending_machine__DOT__item_price
                                                [2U]) 
                                               << 2U)));
-            if ((0U < (IData)(vlSelf->i_input_coin))) {
-                vlSelf->vending_machine__DOT__current_total_nxt = 2U;
-            } else if ((0U < (IData)(vlSelf->i_select_item))) {
-                vlSelf->vending_machine__DOT__current_total_nxt = 3U;
-            }
         } else if ((2U == vlSelf->vending_machine__DOT__current_total)) {
             if ((1U & (IData)(vlSelf->i_input_coin))) {
                 vlSelf->vending_machine__DOT__input_total 
                     = (vlSelf->vending_machine__DOT__input_total 
-                       + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
-                                       [0U], 1U));
+                       + vlSelf->vending_machine__DOT__coin_value
+                       [0U]);
             }
             if ((2U & (IData)(vlSelf->i_input_coin))) {
                 vlSelf->vending_machine__DOT__input_total 
                     = (vlSelf->vending_machine__DOT__input_total 
-                       + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
-                                       [1U], 1U));
+                       + vlSelf->vending_machine__DOT__coin_value
+                       [1U]);
             }
             if ((4U & (IData)(vlSelf->i_input_coin))) {
                 vlSelf->vending_machine__DOT__input_total 
                     = (vlSelf->vending_machine__DOT__input_total 
-                       + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
-                                       [2U], 1U));
+                       + vlSelf->vending_machine__DOT__coin_value
+                       [2U]);
             }
-            vlSelf->vending_machine__DOT__current_total_nxt = 1U;
         } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
             if ((1U & ((IData)(vlSelf->i_select_item) 
                        & (IData)(vlSelf->o_available_item)))) {
@@ -215,16 +207,10 @@ VL_ATTR_COLD void Vvending_machine___024root___stl_sequent__TOP__0(Vvending_mach
             } else {
                 vlSelf->o_output_item = (7U & (IData)(vlSelf->o_output_item));
             }
-            vlSelf->vending_machine__DOT__current_total_nxt 
-                = ((0U < (IData)(vlSelf->o_available_item))
-                    ? 1U : ((vlSelf->vending_machine__DOT__input_total 
-                             > vlSelf->vending_machine__DOT__output_total)
-                             ? 1U : 0U));
         } else {
             vlSelf->vending_machine__DOT__return_total 
                 = (vlSelf->vending_machine__DOT__input_total 
                    - vlSelf->vending_machine__DOT__output_total);
-            vlSelf->vending_machine__DOT__current_total_nxt = 0U;
         }
     }
 }
@@ -323,7 +309,6 @@ VL_ATTR_COLD void Vvending_machine___024root___ctor_var_reset(Vvending_machine__
         vlSelf->vending_machine__DOT__coin_value[__Vi0] = VL_RAND_RESET_I(32);
     }
     vlSelf->vending_machine__DOT__current_total = VL_RAND_RESET_I(32);
-    vlSelf->vending_machine__DOT__current_total_nxt = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__input_total = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__output_total = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__return_total = VL_RAND_RESET_I(32);

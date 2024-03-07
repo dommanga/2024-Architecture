@@ -46,7 +46,9 @@ void Vvending_machine___024root__trace_chg_0_sub_0(Vvending_machine___024root* v
     bufp->chgCData(oldp+16,(vlSelf->o_available_item),4);
     bufp->chgCData(oldp+17,(vlSelf->o_output_item),4);
     bufp->chgCData(oldp+18,(vlSelf->o_return_coin),3);
-    bufp->chgIData(oldp+19,(vlSelf->vending_machine__DOT__current_total_nxt),32);
+    bufp->chgIData(oldp+19,(((0U < (IData)(vlSelf->i_input_coin))
+                              ? 2U : ((0U < (IData)(vlSelf->i_select_item))
+                                       ? 3U : 1U))),32);
     bufp->chgIData(oldp+20,(vlSelf->vending_machine__DOT__input_total),32);
     bufp->chgIData(oldp+21,(vlSelf->vending_machine__DOT__output_total),32);
     bufp->chgIData(oldp+22,(vlSelf->vending_machine__DOT__return_total),32);

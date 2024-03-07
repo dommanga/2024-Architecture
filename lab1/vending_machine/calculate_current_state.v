@@ -38,25 +38,34 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		// You don't have to worry about concurrent activations in each input vector (or array).
 		// Calculate the next current_total state.
 		
-		case (current_total)
-			`S0_init:
-				current_total_nxt = `S1_wait;
-			`S1_wait:
-				if(i_input_coin > 0) 
-					current_total_nxt = `S2_coin;
-				else if(i_select_item > 0) 
-					current_total_nxt = `S3_select;
-			`S2_coin:
-				current_total_nxt = `S1_wait;
-			`S3_select:
-				if (o_available_item > 0) 
-					current_total_nxt = `S1_wait;
-				else if (input_total > output_total)
-					current_total_nxt = `S1_wait;
-				else
-					current_total_nxt = `S0_init;
-			default: begin current_total_nxt = `S0_init; end
-		endcase
+		if (i_input_coin > 0)
+			current_total_nxt = `S2_coin;
+		else if (i_select_item > 0)
+			current_total_nxt = `S3_select;
+		else 
+			current_total_nxt = `S1_wait;
+
+		// case (current_total)
+		// 	`S0_init:
+		// 		current_total_nxt = `S1_wait;
+		// 	`S1_wait:
+		// 		if(i_input_coin > 0) 
+		// 			current_total_nxt = `S2_coin;
+		// 		else if(i_select_item > 0) 
+		// 			current_total_nxt = `S3_select;
+		// 		else
+		// 			current_total_nxt = current_total;
+		// 	`S2_coin:
+		// 		current_total_nxt = `S1_wait;
+		// 	`S3_select:
+		// 		if (o_available_item > 0) 
+		// 			current_total_nxt = `S1_wait;
+		// 		else if (input_total > output_total)
+		// 			current_total_nxt = `S1_wait;
+		// 		else
+		// 			current_total_nxt = `S0_init;
+		// 	default: begin current_total_nxt = `S0_init; end
+		// endcase
 		
 	end
 
@@ -72,10 +81,9 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 				INPUT_tot = 0;
 				output_total = 0;
 				return_total = 0;
-				o_available_item = 0;
 			end
 			`S1_wait: begin
-				for (i = 0; i < `kNumItems; i = i+1) begin
+				for (i = 0; i < `kNumItems; i = i + 1) begin
 					if (input_total - output_total >= item_price[i])
 						o_available_item[i] = 1;
 					else
@@ -83,10 +91,9 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 				end
 			end
 			`S2_coin: begin
-				for (i = 0; i < `kNumCoins; i = i+1) begin
+				for (i = 0; i < `kNumCoins; i = i + 1) begin
 					if (i_input_coin[i]) begin
 						input_total = input_total + coin_value[i] / 2;
-						
 					end
 				end
 				INPUT_tot = INPUT_tot + coin_value[0];

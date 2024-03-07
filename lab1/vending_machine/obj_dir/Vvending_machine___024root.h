@@ -27,7 +27,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vvending_machine___024root final : public Ver
     CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
     CData/*0:0*/ __VactContinue;
     IData/*31:0*/ vending_machine__DOT__current_total;
-    IData/*31:0*/ vending_machine__DOT__current_total_nxt;
     IData/*31:0*/ vending_machine__DOT__input_total;
     IData/*31:0*/ vending_machine__DOT__output_total;
     IData/*31:0*/ vending_machine__DOT__return_total;

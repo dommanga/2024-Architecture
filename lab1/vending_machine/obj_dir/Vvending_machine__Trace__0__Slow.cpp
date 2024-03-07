@@ -156,7 +156,9 @@ VL_ATTR_COLD void Vvending_machine___024root__trace_full_0_sub_0(Vvending_machin
     bufp->fullCData(oldp+17,(vlSelf->o_available_item),4);
     bufp->fullCData(oldp+18,(vlSelf->o_output_item),4);
     bufp->fullCData(oldp+19,(vlSelf->o_return_coin),3);
-    bufp->fullIData(oldp+20,(vlSelf->vending_machine__DOT__current_total_nxt),32);
+    bufp->fullIData(oldp+20,(((0U < (IData)(vlSelf->i_input_coin))
+                               ? 2U : ((0U < (IData)(vlSelf->i_select_item))
+                                        ? 3U : 1U))),32);
     bufp->fullIData(oldp+21,(vlSelf->vending_machine__DOT__input_total),32);
     bufp->fullIData(oldp+22,(vlSelf->vending_machine__DOT__output_total),32);
     bufp->fullIData(oldp+23,(vlSelf->vending_machine__DOT__return_total),32);
