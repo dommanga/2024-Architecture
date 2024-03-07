@@ -13,7 +13,6 @@ VL_INLINE_OPT void Vvending_machine___024root___ico_sequent__TOP__0(Vvending_mac
     if ((0U == vlSelf->vending_machine__DOT__current_total)) {
         vlSelf->vending_machine__DOT__input_total = 0U;
         vlSelf->vending_machine__DOT__output_total = 0U;
-        vlSelf->vending_machine__DOT__return_total = 0U;
     } else if ((1U == vlSelf->vending_machine__DOT__current_total)) {
         vlSelf->o_available_item = ((0xcU & (IData)(vlSelf->o_available_item)) 
                                     | ((((vlSelf->vending_machine__DOT__input_total 
@@ -37,20 +36,20 @@ VL_INLINE_OPT void Vvending_machine___024root___ico_sequent__TOP__0(Vvending_mac
         if ((1U & (IData)(vlSelf->i_input_coin))) {
             vlSelf->vending_machine__DOT__input_total 
                 = (vlSelf->vending_machine__DOT__input_total 
-                   + vlSelf->vending_machine__DOT__coin_value
-                   [0U]);
+                   + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
+                                   [0U], 1U));
         }
         if ((2U & (IData)(vlSelf->i_input_coin))) {
             vlSelf->vending_machine__DOT__input_total 
                 = (vlSelf->vending_machine__DOT__input_total 
-                   + vlSelf->vending_machine__DOT__coin_value
-                   [1U]);
+                   + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
+                                   [1U], 1U));
         }
         if ((4U & (IData)(vlSelf->i_input_coin))) {
             vlSelf->vending_machine__DOT__input_total 
                 = (vlSelf->vending_machine__DOT__input_total 
-                   + vlSelf->vending_machine__DOT__coin_value
-                   [2U]);
+                   + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
+                                   [2U], 1U));
         }
     } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
         if ((1U & ((IData)(vlSelf->i_select_item) & (IData)(vlSelf->o_available_item)))) {
@@ -89,10 +88,6 @@ VL_INLINE_OPT void Vvending_machine___024root___ico_sequent__TOP__0(Vvending_mac
         } else {
             vlSelf->o_output_item = (7U & (IData)(vlSelf->o_output_item));
         }
-    } else {
-        vlSelf->vending_machine__DOT__return_total 
-            = (vlSelf->vending_machine__DOT__input_total 
-               - vlSelf->vending_machine__DOT__output_total);
     }
 }
 
@@ -133,8 +128,59 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
     (void)vlSelf;  // Prevent unused variable warning
     Vvending_machine__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vvending_machine___024root___nba_sequent__TOP__0\n"); );
+    // Init
+    IData/*31:0*/ __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp;
+    __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp = 0;
     // Body
+    __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+        = vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp;
+    if (((0U == vlSelf->vending_machine__DOT__wait_time) 
+         | (IData)(vlSelf->i_trigger_return))) {
+        vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__i = 0xffffffffU;
+        if (((vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__relative_money 
+              - vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp) 
+             >= vlSelf->vending_machine__DOT__coin_value
+             [2U])) {
+            __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+                = (vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [2U]);
+            vlSelf->o_return_coin = (4U | (IData)(vlSelf->o_return_coin));
+        } else {
+            vlSelf->o_return_coin = (3U & (IData)(vlSelf->o_return_coin));
+        }
+        if (((vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__relative_money 
+              - vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp) 
+             >= vlSelf->vending_machine__DOT__coin_value
+             [1U])) {
+            __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+                = (vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [1U]);
+            vlSelf->o_return_coin = (2U | (IData)(vlSelf->o_return_coin));
+        } else {
+            vlSelf->o_return_coin = (5U & (IData)(vlSelf->o_return_coin));
+        }
+        if (((vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__relative_money 
+              - vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp) 
+             >= vlSelf->vending_machine__DOT__coin_value
+             [0U])) {
+            __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+                = (vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+                   + vlSelf->vending_machine__DOT__coin_value
+                   [0U]);
+            vlSelf->o_return_coin = (1U | (IData)(vlSelf->o_return_coin));
+        } else {
+            vlSelf->o_return_coin = (6U & (IData)(vlSelf->o_return_coin));
+        }
+    }
     if (vlSelf->reset_n) {
+        vlSelf->vending_machine__DOT__current_total 
+            = (((0U == vlSelf->vending_machine__DOT__wait_time) 
+                | (IData)(vlSelf->i_trigger_return))
+                ? 4U : ((0U < (IData)(vlSelf->i_input_coin))
+                         ? 2U : ((0U < (IData)(vlSelf->i_select_item))
+                                  ? 3U : 1U)));
         vlSelf->vending_machine__DOT__wait_time = (
                                                    ((0U 
                                                      < (IData)(vlSelf->i_input_coin)) 
@@ -142,19 +188,18 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
                                                        < (IData)(vlSelf->i_select_item)))
                                                     ? 0xaU
                                                     : 
-                                                   (vlSelf->vending_machine__DOT__wait_time 
-                                                    - (IData)(1U)));
-        vlSelf->vending_machine__DOT__current_total 
-            = ((0U < (IData)(vlSelf->i_input_coin))
-                ? 2U : ((0U < (IData)(vlSelf->i_select_item))
-                         ? 3U : 1U));
+                                                   ((0U 
+                                                     < vlSelf->vending_machine__DOT__wait_time)
+                                                     ? 
+                                                    (vlSelf->vending_machine__DOT__wait_time 
+                                                     - (IData)(1U))
+                                                     : 0U));
     } else {
-        vlSelf->vending_machine__DOT__wait_time = 0xaU;
         vlSelf->vending_machine__DOT__current_total = 0U;
+        vlSelf->vending_machine__DOT__wait_time = 0xaU;
     }
-    if ((1U & (~ (IData)(vlSelf->reset_n)))) {
-        vlSelf->o_return_coin = 1U;
-    }
+    vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__temp 
+        = __Vdly__vending_machine__DOT__check_time_and_coin_module__DOT__temp;
     if ((0U != vlSelf->vending_machine__DOT__current_total)) {
         if ((1U == vlSelf->vending_machine__DOT__current_total)) {
             vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 4U;
@@ -162,20 +207,43 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
             vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 3U;
         } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
             vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 4U;
+        } else if ((4U == vlSelf->vending_machine__DOT__current_total)) {
+            vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = 3U;
         }
     }
+    vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__relative_money 
+        = ((vlSelf->vending_machine__DOT__input_total 
+            - vlSelf->vending_machine__DOT__output_total) 
+           - vlSelf->vending_machine__DOT__return_total);
     if ((0U == vlSelf->vending_machine__DOT__current_total)) {
-        vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__INPUT_tot = 0U;
+        vlSelf->vending_machine__DOT__return_total = 0U;
         vlSelf->vending_machine__DOT__input_total = 0U;
         vlSelf->vending_machine__DOT__output_total = 0U;
-        vlSelf->vending_machine__DOT__return_total = 0U;
     } else {
         if ((1U != vlSelf->vending_machine__DOT__current_total)) {
-            if ((2U == vlSelf->vending_machine__DOT__current_total)) {
-                vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__INPUT_tot 
-                    = (vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__INPUT_tot 
-                       + vlSelf->vending_machine__DOT__coin_value
-                       [0U]);
+            if ((2U != vlSelf->vending_machine__DOT__current_total)) {
+                if ((3U != vlSelf->vending_machine__DOT__current_total)) {
+                    if ((4U == vlSelf->vending_machine__DOT__current_total)) {
+                        if ((1U & (IData)(vlSelf->o_return_coin))) {
+                            vlSelf->vending_machine__DOT__return_total 
+                                = (vlSelf->vending_machine__DOT__return_total 
+                                   + vlSelf->vending_machine__DOT__coin_value
+                                   [0U]);
+                        }
+                        if ((2U & (IData)(vlSelf->o_return_coin))) {
+                            vlSelf->vending_machine__DOT__return_total 
+                                = (vlSelf->vending_machine__DOT__return_total 
+                                   + vlSelf->vending_machine__DOT__coin_value
+                                   [1U]);
+                        }
+                        if ((4U & (IData)(vlSelf->o_return_coin))) {
+                            vlSelf->vending_machine__DOT__return_total 
+                                = (vlSelf->vending_machine__DOT__return_total 
+                                   + vlSelf->vending_machine__DOT__coin_value
+                                   [2U]);
+                        }
+                    }
+                }
             }
         }
         if ((1U == vlSelf->vending_machine__DOT__current_total)) {
@@ -204,20 +272,20 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
             if ((1U & (IData)(vlSelf->i_input_coin))) {
                 vlSelf->vending_machine__DOT__input_total 
                     = (vlSelf->vending_machine__DOT__input_total 
-                       + vlSelf->vending_machine__DOT__coin_value
-                       [0U]);
+                       + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
+                                       [0U], 1U));
             }
             if ((2U & (IData)(vlSelf->i_input_coin))) {
                 vlSelf->vending_machine__DOT__input_total 
                     = (vlSelf->vending_machine__DOT__input_total 
-                       + vlSelf->vending_machine__DOT__coin_value
-                       [1U]);
+                       + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
+                                       [1U], 1U));
             }
             if ((4U & (IData)(vlSelf->i_input_coin))) {
                 vlSelf->vending_machine__DOT__input_total 
                     = (vlSelf->vending_machine__DOT__input_total 
-                       + vlSelf->vending_machine__DOT__coin_value
-                       [2U]);
+                       + VL_SHIFTR_III(32,32,32, vlSelf->vending_machine__DOT__coin_value
+                                       [2U], 1U));
             }
         } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
             if ((1U & ((IData)(vlSelf->i_select_item) 
@@ -260,10 +328,6 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
             } else {
                 vlSelf->o_output_item = (7U & (IData)(vlSelf->o_output_item));
             }
-        } else {
-            vlSelf->vending_machine__DOT__return_total 
-                = (vlSelf->vending_machine__DOT__input_total 
-                   - vlSelf->vending_machine__DOT__output_total);
         }
     }
 }

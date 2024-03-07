@@ -115,7 +115,6 @@ void ReturnTest(int current, Vvending_machine *dut, VerilatedVcdC *m_trace)
     uint8_t return_coin[3];
     while (current > 0)
     {
-        // printf("current: %d\n", current);
         return_coin[0] = dut->o_return_coin & 1;
         return_coin[1] = (dut->o_return_coin >> 1) & 1;
         return_coin[2] = (dut->o_return_coin >> 2) & 1;
