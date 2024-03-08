@@ -232,14 +232,28 @@ VL_ATTR_COLD void Vvending_machine___024root___stl_sequent__TOP__0(Vvending_mach
         ((vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__input_total 
           - vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__output_total) 
          - vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__return_total);
-    vlSelf->vending_machine__DOT__current_total_nxt 
-        = (((4U == vlSelf->vending_machine__DOT__current_total) 
-            & (0U == vlSelf->vending_machine__DOT__relative_money))
-            ? 0U : ((0U < (IData)(vlSelf->i_input_coin))
-                     ? 2U : (((0U == vlSelf->vending_machine__DOT__wait_time) 
-                              | (IData)(vlSelf->i_trigger_return))
-                              ? 4U : ((0U < (IData)(vlSelf->i_select_item))
-                                       ? 3U : 1U))));
+    if ((0U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__current_total_nxt 
+            = ((0U < (IData)(vlSelf->i_input_coin))
+                ? 2U : 1U);
+    } else if ((1U == vlSelf->vending_machine__DOT__current_total)) {
+        if ((0U < (IData)(vlSelf->i_input_coin))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 2U;
+        } else if ((0U < (IData)(vlSelf->i_select_item))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 3U;
+        } else if (((0U == vlSelf->vending_machine__DOT__wait_time) 
+                    | (IData)(vlSelf->i_trigger_return))) {
+            vlSelf->vending_machine__DOT__current_total_nxt = 4U;
+        }
+    } else if ((2U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__current_total_nxt = 1U;
+    } else if ((3U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__current_total_nxt = 1U;
+    } else if ((4U == vlSelf->vending_machine__DOT__current_total)) {
+        vlSelf->vending_machine__DOT__current_total_nxt 
+            = ((0U == vlSelf->vending_machine__DOT__relative_money)
+                ? 0U : vlSelf->vending_machine__DOT__current_total);
+    }
 }
 
 VL_ATTR_COLD void Vvending_machine___024root___eval_stl(Vvending_machine___024root* vlSelf) {

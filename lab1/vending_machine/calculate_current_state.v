@@ -31,40 +31,40 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 	// Combinational logic for the next states
 	always @(*) begin
 		
-		if (current_total == `S4_return && relative_money == 0)
-			current_total_nxt = `S0_init;
-		else if (i_input_coin > 0)
-			current_total_nxt = `S2_coin;
-		else if (wait_time == 0 || i_trigger_return)
-			current_total_nxt = `S4_return;
-		else if (i_select_item > 0)
-			current_total_nxt = `S3_select;
-		else 
-			current_total_nxt = `S1_wait;
+		// if (current_total == `S4_return && relative_money == 0)
+		// 	current_total_nxt = `S0_init;
+		// else if (i_input_coin > 0)
+		// 	current_total_nxt = `S2_coin;
+		// else if (wait_time == 0 || i_trigger_return)
+		// 	current_total_nxt = `S4_return;
+		// else if (i_select_item > 0)
+		// 	current_total_nxt = `S3_select;
+		// else 
+		// 	current_total_nxt = `S1_wait;
 
 		//maybe we can use this logic also.
 
-		// case (current_total)
-		// 	`S0_init:
-		// 		current_total_nxt = `S1_wait;
-		// 	`S1_wait:
-		// 		if(i_input_coin > 0) 
-		// 			current_total_nxt = `S2_coin;
-		// 		else if(i_select_item > 0) 
-		// 			current_total_nxt = `S3_select;
-		// 		else
-		// 			current_total_nxt = current_total;
-		// 	`S2_coin:
-		// 		current_total_nxt = `S1_wait;
-		// 	`S3_select:
-		// 		if (o_available_item > 0) 
-		// 			current_total_nxt = `S1_wait;
-		// 		else if (input_total > output_total)
-		// 			current_total_nxt = `S1_wait;
-		// 		else
-		// 			current_total_nxt = `S0_init;
-		// 	default: current_total_nxt = current_total;
-		// endcase
+		case (current_total)
+			`S0_init:
+				if (i_input_coin > 0) 
+					current_total_nxt = `S2_coin;
+				else 
+					current_total_nxt = `S1_wait;
+			`S1_wait:
+				if (i_input_coin > 0) 
+					current_total_nxt = `S2_coin;
+				else if (i_select_item > 0) 
+					current_total_nxt = `S3_select;
+				else if (wait_time == 0 || i_trigger_return)
+					current_total_nxt = `S4_return;
+			`S2_coin:
+				current_total_nxt = `S1_wait;
+			`S3_select:
+				current_total_nxt = `S1_wait;
+			`S4_return:
+				if (relative_money == 0)
+					current_total_nxt = `S0_init;
+		endcase
 		
 	end
 
