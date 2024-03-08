@@ -17,35 +17,17 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,o_available_ite
 
 	reg flag;
 
-	// initiate values
-	initial begin
-		// TODO: initiate values
-
-		
-	end
-
-
-	// update coin return time
-	always @(i_input_coin, i_select_item) begin
-		// TODO: update coin return time
-		
-	end
-
-	always @(*) begin
-		// TODO: o_return_coin
-	
-	end
-
+	/* Sequential logic to update wait_time and return coin. */
 	always @(posedge clk ) begin
 
-		// return coin in descending order of coin value
+		/* Return coin in descending order of coin value */
 		if (wait_time == 0) begin
 			if (relative_money >= coin_value[2])
-				o_return_coin <= `kNumCoins'b100; // 1000
+				o_return_coin <= `kNumCoins'b100; /* 1000 */
 			else if (relative_money >= coin_value[1])
-				o_return_coin <= `kNumCoins'b010; // 500
+				o_return_coin <= `kNumCoins'b010; /* 500 */
 			else if (relative_money >= coin_value[0])
-				o_return_coin <= `kNumCoins'b001; // 100
+				o_return_coin <= `kNumCoins'b001; /* 100 */
 			else
 				o_return_coin <= `kNumCoins'b000;
 		end
@@ -53,23 +35,23 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,o_available_ite
 			o_return_coin <= `kNumCoins'b000;
 
 
-
+		/* When reset signal, initialize all values. */
 		if (!reset_n) begin
 			wait_time <= `kWaitTime;
 			flag <= 0;
 			o_return_coin <= `kNumCoins'b000;
 		end
-		else if (i_trigger_return && !flag) begin // wait 3 cycles before starting return
+		else if (i_trigger_return && !flag) begin /* Wait 3 cycles before start to return coin. NOTE: Already in state 'S4_return'. */
 			wait_time <= 2;
 			flag <= 1;
 		end
-		else if (!i_trigger_return && flag) // initialize flag when return command button canceled
+		else if (!i_trigger_return && flag) /* Initialize flag for later use when return command button is 'not' pressed. */
 			flag <= 0;
 		else if (i_input_coin > 0 || current_total == `S0_init)
 			wait_time <= `kWaitTime;
-		else if ((i_select_item & o_available_item) > 0) // initialize wait time when purchase
+		else if ((i_select_item & o_available_item) > 0) /* Initialize wait time when purchase happens. */
 			wait_time <= `kWaitTime;
-		else begin // time diminishes per clk
+		else begin /* Time diminishes per clk. */
 			if (wait_time > 0)
 				wait_time <= wait_time - 1;
 			else

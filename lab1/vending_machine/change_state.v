@@ -11,15 +11,13 @@ module change_state(clk,reset_n,current_total_nxt,current_total);
 	// Sequential circuit to reset or update the states
 	always @(posedge clk ) begin
 		if (!reset_n) begin
-			// TODO: reset all states.
 
-			//reset current_total(0)
+			/* Reset current_total to initial state. */
 			current_total <= `S0_init;
 		end
 		else begin
-			// TODO: update all states.
 			
-			// update current_total to current_total_nxt
+			/* Update current state to next state. */
 			current_total <= current_total_nxt;
 		end
 	end

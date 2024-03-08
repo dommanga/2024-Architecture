@@ -54,7 +54,7 @@ module vending_machine (
 
 	
 	// Variables. You may add more your own net variables.
-	wire [`kTotalBits-1:0] relative_money;
+	wire [`kTotalBits-1:0] relative_money; /* New added variable. relative money is pure sum or total money which vending machine has. */
 	wire [31:0] wait_time;
 
 
