@@ -25,19 +25,6 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 
 	// Combinational logic for the next states
 	always @(*) begin
-		
-		// if (current_total == `S4_return && relative_money == 0)
-		// 	current_total_nxt = `S0_init;
-		// else if (i_input_coin > 0)
-		// 	current_total_nxt = `S2_coin;
-		// else if (wait_time == 0 || i_trigger_return)
-		// 	current_total_nxt = `S4_return;
-		// else if (i_select_item > 0)
-		// 	current_total_nxt = `S3_select;
-		// else 
-		// 	current_total_nxt = `S1_wait;
-
-		//maybe we can use this logic also.
 
 		case (current_total)
 			`S0_init:
@@ -84,11 +71,9 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 				turn = 1;
 			end
 			`S2_coin: begin
-				//$monitor("input_total: %d", input_total);
 				if (turn) begin
 					for (i = 0; i < `kNumCoins; i = i + 1) begin
 						if (i_input_coin[i]) begin
-							//$display("input_total: %d, coin: %d", input_total, coin_value[i]);
 							input_total = input_total + coin_value[i];
 						end
 					end
