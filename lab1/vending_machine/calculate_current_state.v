@@ -33,10 +33,10 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 		
 		if (current_total == `S4_return && relative_money == 0)
 			current_total_nxt = `S0_init;
-		else if (wait_time == 0 || i_trigger_return)
-			current_total_nxt = `S4_return;
 		else if (i_input_coin > 0)
 			current_total_nxt = `S2_coin;
+		else if (wait_time == 0 || i_trigger_return)
+			current_total_nxt = `S4_return;
 		else if (i_select_item > 0)
 			current_total_nxt = `S3_select;
 		else 

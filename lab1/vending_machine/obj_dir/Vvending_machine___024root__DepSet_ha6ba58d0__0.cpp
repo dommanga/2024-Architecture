@@ -96,10 +96,10 @@ VL_INLINE_OPT void Vvending_machine___024root___ico_sequent__TOP__0(Vvending_mac
     vlSelf->vending_machine__DOT__current_total_nxt 
         = (((4U == vlSelf->vending_machine__DOT__current_total) 
             & (0U == vlSelf->vending_machine__DOT__relative_money))
-            ? 0U : (((0U == vlSelf->vending_machine__DOT__wait_time) 
-                     | (IData)(vlSelf->i_trigger_return))
-                     ? 4U : ((0U < (IData)(vlSelf->i_input_coin))
-                              ? 2U : ((0U < (IData)(vlSelf->i_select_item))
+            ? 0U : ((0U < (IData)(vlSelf->i_input_coin))
+                     ? 2U : (((0U == vlSelf->vending_machine__DOT__wait_time) 
+                              | (IData)(vlSelf->i_trigger_return))
+                              ? 4U : ((0U < (IData)(vlSelf->i_select_item))
                                        ? 3U : 1U))));
 }
 
@@ -153,7 +153,13 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
                                                  vlSelf->vending_machine__DOT__coin_value
                                                  [1U])
                                                  ? 2U
-                                                 : 1U))
+                                                 : 
+                                                ((vlSelf->vending_machine__DOT__relative_money 
+                                                  >= 
+                                                  vlSelf->vending_machine__DOT__coin_value
+                                                  [0U])
+                                                  ? 1U
+                                                  : 0U)))
                               : 0U);
     if (vlSelf->reset_n) {
         if (((IData)(vlSelf->i_trigger_return) & (~ (IData)(vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__flag)))) {
@@ -161,11 +167,13 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
             vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__flag = 1U;
         } else {
             __Vdly__vending_machine__DOT__wait_time 
-                = (((0U < (IData)(vlSelf->i_input_coin)) 
-                    | (0U < (IData)(vlSelf->i_select_item)))
-                    ? 0xaU : ((0U < vlSelf->vending_machine__DOT__wait_time)
-                               ? (vlSelf->vending_machine__DOT__wait_time 
-                                  - (IData)(1U)) : 0U));
+                = ((0U < (IData)(vlSelf->i_input_coin))
+                    ? 0xaU : ((0U < ((IData)(vlSelf->i_select_item) 
+                                     & (IData)(vlSelf->o_available_item)))
+                               ? 0xaU : ((0U < vlSelf->vending_machine__DOT__wait_time)
+                                          ? (vlSelf->vending_machine__DOT__wait_time 
+                                             - (IData)(1U))
+                                          : 0U)));
         }
         vlSelf->vending_machine__DOT__current_total 
             = vlSelf->vending_machine__DOT__current_total_nxt;
@@ -307,10 +315,10 @@ VL_INLINE_OPT void Vvending_machine___024root___nba_sequent__TOP__0(Vvending_mac
     vlSelf->vending_machine__DOT__current_total_nxt 
         = (((4U == vlSelf->vending_machine__DOT__current_total) 
             & (0U == vlSelf->vending_machine__DOT__relative_money))
-            ? 0U : (((0U == vlSelf->vending_machine__DOT__wait_time) 
-                     | (IData)(vlSelf->i_trigger_return))
-                     ? 4U : ((0U < (IData)(vlSelf->i_input_coin))
-                              ? 2U : ((0U < (IData)(vlSelf->i_select_item))
+            ? 0U : ((0U < (IData)(vlSelf->i_input_coin))
+                     ? 2U : (((0U == vlSelf->vending_machine__DOT__wait_time) 
+                              | (IData)(vlSelf->i_trigger_return))
+                              ? 4U : ((0U < (IData)(vlSelf->i_select_item))
                                        ? 3U : 1U))));
 }
 

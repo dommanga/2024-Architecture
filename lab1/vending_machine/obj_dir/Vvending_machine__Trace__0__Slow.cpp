@@ -85,6 +85,7 @@ VL_ATTR_COLD void Vvending_machine___024root__trace_init_sub__TOP__0(Vvending_ma
     tracep->popPrefix();
     tracep->declBus(c+15,0,"i_input_coin",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 2,0);
     tracep->declBus(c+16,0,"i_select_item",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 3,0);
+    tracep->declBus(c+18,0,"o_available_item",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 3,0);
     tracep->declBus(c+22,0,"relative_money",-1, VerilatedTraceSigDirection::INPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 31,0);
     tracep->declBus(c+20,0,"o_return_coin",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 2,0);
     tracep->declBus(c+9,0,"wait_time",-1, VerilatedTraceSigDirection::OUTPUT, VerilatedTraceSigKind::WIRE, VerilatedTraceSigType::LOGIC, false,-1, 31,0);
@@ -164,11 +165,11 @@ VL_ATTR_COLD void Vvending_machine___024root__trace_full_0_sub_0(Vvending_machin
     bufp->fullCData(oldp+20,(vlSelf->o_return_coin),3);
     bufp->fullIData(oldp+21,((((4U == vlSelf->vending_machine__DOT__current_total) 
                                & (0U == vlSelf->vending_machine__DOT__relative_money))
-                               ? 0U : (((0U == vlSelf->vending_machine__DOT__wait_time) 
-                                        | (IData)(vlSelf->i_trigger_return))
-                                        ? 4U : ((0U 
-                                                 < (IData)(vlSelf->i_input_coin))
-                                                 ? 2U
+                               ? 0U : ((0U < (IData)(vlSelf->i_input_coin))
+                                        ? 2U : (((0U 
+                                                  == vlSelf->vending_machine__DOT__wait_time) 
+                                                 | (IData)(vlSelf->i_trigger_return))
+                                                 ? 4U
                                                  : 
                                                 ((0U 
                                                   < (IData)(vlSelf->i_select_item))

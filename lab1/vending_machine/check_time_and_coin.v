@@ -2,13 +2,14 @@
 
 	
 
-module check_time_and_coin(i_input_coin,i_select_item,coin_value,relative_money,i_trigger_return,clk,reset_n,wait_time,o_return_coin);
+module check_time_and_coin(i_input_coin,i_select_item,coin_value,o_available_item,relative_money,i_trigger_return,clk,reset_n,wait_time,o_return_coin);
 	input clk;
 	input reset_n;
 	input i_trigger_return;
 	input [31:0] coin_value [`kNumCoins-1:0];
 	input [`kNumCoins-1:0] i_input_coin;
 	input [`kNumItems-1:0]	i_select_item;
+	input [`kNumItems-1:0] o_available_item;
 	input [`kTotalBits-1:0] relative_money;
 	output reg  [`kNumCoins-1:0] o_return_coin;
 	output reg [31:0] wait_time;
@@ -46,7 +47,7 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,relative_money,
 			else if (relative_money >= coin_value[0])
 				o_return_coin <= `kNumCoins'b001;
 			else
-				o_return_coin <= `kNumCoins'b001;
+				o_return_coin <= `kNumCoins'b000;
 		end
 		else	
 			o_return_coin <= `kNumCoins'b000;
@@ -58,7 +59,9 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,relative_money,
 			wait_time <= 2;
 			flag <= 1;
 		end
-		else if (i_input_coin > 0 || i_select_item > 0)
+		else if (i_input_coin > 0)
+			wait_time <= `kWaitTime;
+		else if ((i_select_item & o_available_item) > 0)
 			wait_time <= `kWaitTime;
 		else begin
 			if (wait_time > 0)
