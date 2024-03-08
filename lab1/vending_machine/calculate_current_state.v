@@ -3,7 +3,7 @@
 	
 
 module calculate_current_state(i_input_coin,i_select_item,i_trigger_return,item_price,coin_value,current_total,
-input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coin,o_available_item,o_output_item);
+relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_output_item);
 
 	input i_trigger_return;
 	
@@ -14,9 +14,11 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 	input [`kTotalBits-1:0] current_total;
 	input [31:0] wait_time;
 	output reg [`kNumItems-1:0] o_available_item,o_output_item;
-	output reg  [`kTotalBits-1:0] input_total, output_total, return_total;
+	output [`kTotalBits-1:0] relative_money;
 	output reg  [`kTotalBits-1:0] current_total_nxt;
 	integer i;	
+
+	reg  [`kTotalBits-1:0] input_total, output_total, return_total;
 
 	initial begin
 		input_total = 0;
@@ -24,10 +26,14 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		return_total = 0;
 	end
 
+	assign relative_money = input_total - output_total - return_total;
+
 	// Combinational logic for the next states
 	always @(*) begin
 		
-		if (wait_time == 0 || i_trigger_return)
+		if (current_total == `S4_return && relative_money == 0)
+			current_total_nxt = `S0_init;
+		else if (wait_time == 0 || i_trigger_return)
 			current_total_nxt = `S4_return;
 		else if (i_input_coin > 0)
 			current_total_nxt = `S2_coin;
@@ -62,6 +68,7 @@ input_total, output_total, return_total,current_total_nxt,wait_time,o_return_coi
 		
 	end
 
+	
 	
 	// Combinational logic for the outputs
 	always @(*) begin
