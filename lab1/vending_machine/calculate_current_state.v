@@ -19,12 +19,7 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 	integer i;	
 
 	reg  [`kTotalBits-1:0] input_total, output_total, return_total;
-
-	initial begin
-		input_total = 0;
-		output_total = 0;
-		return_total = 0;
-	end
+	reg turn;
 
 	assign relative_money = input_total - output_total - return_total;
 
@@ -77,6 +72,7 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 				input_total = 0;
 				output_total = 0;
 				return_total = 0;
+				turn = 1;
 			end
 			`S1_wait: begin
 				for (i = 0; i < `kNumItems; i = i + 1) begin
@@ -85,23 +81,32 @@ relative_money,current_total_nxt,wait_time,o_return_coin,o_available_item,o_outp
 					else
 						o_available_item[i] = 0;
 				end
+				turn = 1;
 			end
 			`S2_coin: begin
-				for (i = 0; i < `kNumCoins; i = i + 1) begin
-					if (i_input_coin[i]) begin
-						input_total = input_total + coin_value[i] / 2; //for result..
+				//$monitor("input_total: %d", input_total);
+				if (turn) begin
+					for (i = 0; i < `kNumCoins; i = i + 1) begin
+						if (i_input_coin[i]) begin
+							//$display("input_total: %d, coin: %d", input_total, coin_value[i]);
+							input_total = input_total + coin_value[i];
+						end
 					end
+					turn = 0;
 				end
 			end
 			`S3_select: begin
-				for (i = 0; i < `kNumItems; i = i+1) begin
-					if (i_select_item[i] && o_available_item[i]) begin
-						o_output_item[i] = 1;
-						output_total = output_total + item_price[i] / 2; //for result..
+				if (turn) begin
+					for (i = 0; i < `kNumItems; i = i+1) begin
+						if (i_select_item[i] && o_available_item[i]) begin
+							o_output_item[i] = 1;
+							output_total = output_total + item_price[i];
+						end
+						else begin
+							o_output_item[i] = 0;
+						end
 					end
-					else begin
-						o_output_item[i] = 0;
-					end
+					turn = 0;
 				end
 			end
 			`S4_return: begin

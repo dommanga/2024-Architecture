@@ -23,6 +23,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vvending_machine___024root final : public Ver
     VL_OUT8(o_output_item,3,0);
     VL_OUT8(o_return_coin,2,0);
     CData/*0:0*/ vending_machine__DOT__check_time_and_coin_module__DOT__flag;
+    CData/*0:0*/ vending_machine__DOT__calculate_current_state_module__DOT__turn;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
     CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
@@ -38,7 +39,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vvending_machine___024root final : public Ver
     IData/*31:0*/ __VactIterCount;
     VlUnpacked<IData/*31:0*/, 4> vending_machine__DOT__item_price;
     VlUnpacked<IData/*31:0*/, 3> vending_machine__DOT__coin_value;
-    VlUnpacked<CData/*0:0*/, 2> __Vm_traceActivity;
+    VlUnpacked<CData/*0:0*/, 3> __Vm_traceActivity;
     VlTriggerVec<1> __VstlTriggered;
     VlTriggerVec<1> __VicoTriggered;
     VlTriggerVec<1> __VactTriggered;

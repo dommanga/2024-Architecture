@@ -66,6 +66,7 @@ module vending_machine (
 									.coin_value(coin_value),
 									.o_available_item(o_available_item),
 									.relative_money(relative_money),
+									.current_total(current_total),
 									.i_trigger_return(i_trigger_return),
 									.clk(clk),
 									.reset_n(reset_n),
