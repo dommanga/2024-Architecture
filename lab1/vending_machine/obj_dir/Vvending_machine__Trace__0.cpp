@@ -46,15 +46,16 @@ void Vvending_machine___024root__trace_chg_0_sub_0(Vvending_machine___024root* v
         bufp->chgIData(oldp+14,(vlSelf->vending_machine__DOT__wait_time),32);
         bufp->chgIData(oldp+15,(vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__return_total),32);
         bufp->chgBit(oldp+16,(vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__flag));
+        bufp->chgBit(oldp+17,(vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__in_process_input));
     }
-    bufp->chgBit(oldp+17,(vlSelf->clk));
-    bufp->chgBit(oldp+18,(vlSelf->reset_n));
-    bufp->chgCData(oldp+19,(vlSelf->i_input_coin),3);
-    bufp->chgCData(oldp+20,(vlSelf->i_select_item),4);
-    bufp->chgBit(oldp+21,(vlSelf->i_trigger_return));
-    bufp->chgCData(oldp+22,(vlSelf->o_available_item),4);
-    bufp->chgCData(oldp+23,(vlSelf->o_output_item),4);
-    bufp->chgCData(oldp+24,(vlSelf->o_return_coin),3);
+    bufp->chgBit(oldp+18,(vlSelf->clk));
+    bufp->chgBit(oldp+19,(vlSelf->reset_n));
+    bufp->chgCData(oldp+20,(vlSelf->i_input_coin),3);
+    bufp->chgCData(oldp+21,(vlSelf->i_select_item),4);
+    bufp->chgBit(oldp+22,(vlSelf->i_trigger_return));
+    bufp->chgCData(oldp+23,(vlSelf->o_available_item),4);
+    bufp->chgCData(oldp+24,(vlSelf->o_output_item),4);
+    bufp->chgCData(oldp+25,(vlSelf->o_return_coin),3);
 }
 
 void Vvending_machine___024root__trace_cleanup(void* voidSelf, VerilatedVcd* /*unused*/) {

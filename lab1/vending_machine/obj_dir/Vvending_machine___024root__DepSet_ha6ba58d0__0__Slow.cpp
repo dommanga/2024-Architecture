@@ -352,6 +352,7 @@ VL_ATTR_COLD void Vvending_machine___024root___ctor_var_reset(Vvending_machine__
     vlSelf->vending_machine__DOT__relative_money = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__wait_time = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__flag = VL_RAND_RESET_I(1);
+    vlSelf->vending_machine__DOT__check_time_and_coin_module__DOT__in_process_input = VL_RAND_RESET_I(1);
     vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__i = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__input_total = VL_RAND_RESET_I(32);
     vlSelf->vending_machine__DOT__calculate_current_state_module__DOT__output_total = VL_RAND_RESET_I(32);

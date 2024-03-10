@@ -16,6 +16,7 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,o_available_ite
 	output reg [31:0] wait_time;
 
 	reg flag;
+	reg in_process_input;
 
 	/* Sequential logic to update wait_time and return coin. */
 	always @(posedge clk ) begin
@@ -40,6 +41,7 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,o_available_ite
 			wait_time <= `kWaitTime;
 			flag <= 0;
 			o_return_coin <= `kNumCoins'b000;
+			in_process_input <= 0;
 		end
 		else if (i_trigger_return && !flag) begin /* Wait 3 cycles before start to return coin. NOTE: Already in state 'S4_return'. */
 			wait_time <= 2;
@@ -47,8 +49,14 @@ module check_time_and_coin(i_input_coin,i_select_item,coin_value,o_available_ite
 		end
 		else if (!i_trigger_return && flag) /* Initialize flag for later use when return command button is 'not' pressed. */
 			flag <= 0;
-		else if (i_input_coin > 0 || current_total == `S0_init)
+		else if (i_input_coin > 0 || current_total == `S0_init) begin
 			wait_time <= `kWaitTime;
+			in_process_input <= 1; 
+		end
+		else if (in_process_input) begin /* Maintain wait time to initial value when processing coin input yet. - coin input process needs two clk cycles to finish. */
+			wait_time <= `kWaitTime;
+			in_process_input <= 0;
+		end
 		else if ((i_select_item & o_available_item) > 0) /* Initialize wait time when purchase happens. */
 			wait_time <= `kWaitTime;
 		else begin /* Time diminishes per clk. */

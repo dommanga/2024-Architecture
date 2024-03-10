@@ -23,6 +23,7 @@ class alignas(VL_CACHE_LINE_BYTES) Vvending_machine___024root final : public Ver
     VL_OUT8(o_output_item,3,0);
     VL_OUT8(o_return_coin,2,0);
     CData/*0:0*/ vending_machine__DOT__check_time_and_coin_module__DOT__flag;
+    CData/*0:0*/ vending_machine__DOT__check_time_and_coin_module__DOT__in_process_input;
     CData/*0:0*/ vending_machine__DOT__calculate_current_state_module__DOT__turn;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __VicoFirstIteration;
