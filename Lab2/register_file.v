@@ -1,4 +1,6 @@
-module register_file(input	reset,
+`include "opcodes.v"
+
+module register_file(input   reset,
                      input clk,
                      input [4:0] rs1,          // source register 1
                      input [4:0] rs2,          // source register 2
@@ -7,6 +9,7 @@ module register_file(input	reset,
                      input write_enable,          // RegWrite signal
                      output [31:0] rs1_dout,   // output of rs 1
                      output [31:0] rs2_dout,   // output of rs 2
+                     output [31:0] gpr_x17,
                      output [31:0] print_reg [0:31]);
   integer i;
   // Register file
@@ -16,7 +19,19 @@ module register_file(input	reset,
 
   // TODO
   // Asynchronously read register file
-  // Synchronously write data to the register file
+  assign rs1_dout = rf[rs1]; 
+  assign rs2_dout = rf[rs2];
+  assign gpr_x17 = rf[17];
+
+// done: Synchronously write data to the register file
+always @(posedge clk) 
+begin
+  rf[0] <= 0;
+  
+  if(write_enable) //RegWrite signal 
+    rf[rd] <= rd_din; // Write data in dest_register
+end
+
 
   // Initialize register file (do not touch)
   always @(posedge clk) begin

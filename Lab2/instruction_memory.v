@@ -15,7 +15,9 @@ module instruction_memory #(parameter MEM_DEPTH = 1024) (input reset,
                   1'b0};
 
   // TODO
-  // Asynchronously read instruction from the memory 
+  // Asynchronously read instruction from the memory
+  assign dout = mem[imem_addr];
+
   // (use imem_addr to access memory)
 
   // Initialize instruction memory (do not touch except path)
@@ -29,10 +31,8 @@ module instruction_memory #(parameter MEM_DEPTH = 1024) (input reset,
         // DO NOT TOUCH COMMENT ABOVE
 
       // Provide path of the file including instructions with binary format
-      $readmemh("/path/to/binary_format/file", mem);
+      $readmemh("/home/jimin/2024-Architecture/Lab2/student_tb/non-controlflow_mem.txt", mem);
     end
   end
 
 endmodule
-
-
