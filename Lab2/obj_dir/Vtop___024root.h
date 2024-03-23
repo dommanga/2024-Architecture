@@ -29,6 +29,10 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     CData/*0:0*/ top__DOT__cpu__DOT__isEcall;
     CData/*0:0*/ top__DOT__cpu__DOT__alu_bcond;
     CData/*3:0*/ top__DOT__cpu__DOT__alu_op;
+    CData/*4:0*/ top__DOT__cpu__DOT____Vcellinp__reg_file__rs2;
+    CData/*6:0*/ top__DOT__cpu__DOT__ctrl_unit__DOT__opcode;
+    CData/*2:0*/ top__DOT__cpu__DOT__alu_ctrl_unit__DOT__funct3;
+    CData/*6:0*/ top__DOT__cpu__DOT__alu_ctrl_unit__DOT__funct7;
     CData/*0:0*/ __VstlFirstIteration;
     CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
     CData/*0:0*/ __VactContinue;
@@ -36,7 +40,6 @@ class alignas(VL_CACHE_LINE_BYTES) Vtop___024root final : public VerilatedModule
     IData/*31:0*/ top__DOT__cpu__DOT__current_pc;
     IData/*31:0*/ top__DOT__cpu__DOT__instr_out;
     IData/*31:0*/ top__DOT__cpu__DOT__rs1_dout;
-    IData/*31:0*/ top__DOT__cpu__DOT__rs2_dout;
     IData/*31:0*/ top__DOT__cpu__DOT__imm_gen_out;
     IData/*31:0*/ top__DOT__cpu__DOT__alu_src2_mux_out;
     IData/*31:0*/ top__DOT__cpu__DOT__alu_result;

@@ -303,7 +303,8 @@ VL_ATTR_COLD void Vtop___024root__trace_full_0_sub_0(Vtop___024root* vlSelf, Ver
                               : ((IData)(4U) + vlSelf->top__DOT__cpu__DOT__current_pc))),32);
     bufp->fullIData(oldp+7,(vlSelf->top__DOT__cpu__DOT__instr_out),32);
     bufp->fullIData(oldp+8,(vlSelf->top__DOT__cpu__DOT__rs1_dout),32);
-    bufp->fullIData(oldp+9,(vlSelf->top__DOT__cpu__DOT__rs2_dout),32);
+    bufp->fullIData(oldp+9,(vlSelf->top__DOT__cpu__DOT__reg_file__DOT__rf
+                            [vlSelf->top__DOT__cpu__DOT____Vcellinp__reg_file__rs2]),32);
     bufp->fullIData(oldp+10,(vlSelf->top__DOT__cpu__DOT__reg_file__DOT__rf
                              [0x11U]),32);
     bufp->fullBit(oldp+11,(vlSelf->top__DOT__cpu__DOT__isJAL));
@@ -335,12 +336,12 @@ VL_ATTR_COLD void Vtop___024root__trace_full_0_sub_0(Vtop___024root* vlSelf, Ver
                                   [(0x3fffU & (vlSelf->top__DOT__cpu__DOT__alu_result 
                                                >> 2U))]
                                    : 0U) : vlSelf->top__DOT__cpu__DOT__alu_result)),32);
-    bufp->fullCData(oldp+29,((0x7fU & vlSelf->top__DOT__cpu__DOT__instr_out)),7);
-    bufp->fullCData(oldp+30,((7U & (vlSelf->top__DOT__cpu__DOT__instr_out 
-                                    >> 0xcU))),3);
-    bufp->fullCData(oldp+31,((vlSelf->top__DOT__cpu__DOT__instr_out 
-                              >> 0x19U)),7);
-    bufp->fullBit(oldp+32,((0U != vlSelf->top__DOT__cpu__DOT__instr_out)));
+    bufp->fullCData(oldp+29,(vlSelf->top__DOT__cpu__DOT__ctrl_unit__DOT__opcode),7);
+    bufp->fullCData(oldp+30,(vlSelf->top__DOT__cpu__DOT__alu_ctrl_unit__DOT__funct3),3);
+    bufp->fullCData(oldp+31,(vlSelf->top__DOT__cpu__DOT__alu_ctrl_unit__DOT__funct7),7);
+    bufp->fullBit(oldp+32,((0U != vlSelf->top__DOT__cpu__DOT__imem__DOT__mem
+                            [(0x3ffU & (vlSelf->top__DOT__cpu__DOT__current_pc 
+                                        >> 2U))])));
     bufp->fullIData(oldp+33,(vlSelf->top__DOT__cpu__DOT__dmem__DOT__i),32);
     bufp->fullSData(oldp+34,((0x3fffU & (vlSelf->top__DOT__cpu__DOT__alu_result 
                                          >> 2U))),14);
@@ -1372,11 +1373,16 @@ VL_ATTR_COLD void Vtop___024root__trace_full_0_sub_0(Vtop___024root* vlSelf, Ver
     bufp->fullSData(oldp+1060,((0x3ffU & (vlSelf->top__DOT__cpu__DOT__current_pc 
                                           >> 2U))),10);
     bufp->fullIData(oldp+1061,(vlSelf->top__DOT__cpu__DOT__imm_gen__DOT__i),32);
-    bufp->fullCData(oldp+1062,((0x1fU & (vlSelf->top__DOT__cpu__DOT__instr_out 
+    bufp->fullCData(oldp+1062,((0x1fU & (vlSelf->top__DOT__cpu__DOT__imem__DOT__mem
+                                         [(0x3ffU & 
+                                           (vlSelf->top__DOT__cpu__DOT__current_pc 
+                                            >> 2U))] 
                                          >> 0xfU))),5);
-    bufp->fullCData(oldp+1063,((0x1fU & (vlSelf->top__DOT__cpu__DOT__instr_out 
-                                         >> 0x14U))),5);
-    bufp->fullCData(oldp+1064,((0x1fU & (vlSelf->top__DOT__cpu__DOT__instr_out 
+    bufp->fullCData(oldp+1063,(vlSelf->top__DOT__cpu__DOT____Vcellinp__reg_file__rs2),5);
+    bufp->fullCData(oldp+1064,((0x1fU & (vlSelf->top__DOT__cpu__DOT__imem__DOT__mem
+                                         [(0x3ffU & 
+                                           (vlSelf->top__DOT__cpu__DOT__current_pc 
+                                            >> 2U))] 
                                          >> 7U))),5);
     bufp->fullIData(oldp+1065,(vlSelf->top__DOT__cpu__DOT__reg_file__DOT__i),32);
     bufp->fullIData(oldp+1066,(vlSelf->top__DOT__cpu__DOT__reg_file__DOT__rf[0]),32);

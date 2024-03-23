@@ -31,7 +31,7 @@ module instruction_memory #(parameter MEM_DEPTH = 1024) (input reset,
         // DO NOT TOUCH COMMENT ABOVE
 
       // Provide path of the file including instructions with binary format
-      $readmemh("/home/jimin/2024-Architecture/Lab2/student_tb/non-controlflow_mem.txt", mem);
+      $readmemh("/root/2024-Architecture/Lab2/student_tb/non-controlflow_mem.txt", mem);
     end
   end
 
