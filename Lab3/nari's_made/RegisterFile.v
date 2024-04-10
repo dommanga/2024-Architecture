@@ -16,6 +16,9 @@ module RegisterFile(input	reset,
   assign rs1_dout = rf[rs1];
   assign rs2_dout = rf[rs2];
 
+
+  
+
   always @(posedge clk) begin
     // Initialize register file (do not touch)
     if (reset) begin
