@@ -9,13 +9,16 @@ module ALUControlUnit (
     input ALU_op_sig,
     output reg [3:0] alu_op);
 
-reg [6:0] opcode = part_of_inst[6:0];
-reg [2:0] funct3 = part_of_inst[14:12];
-reg [6:0] funct7 = part_of_inst[31:25];
+reg [6:0] opcode;
+reg [2:0] funct3;
+reg [6:0] funct7;
 
 wire unused = | part_of_inst[31:0];
 
 always @(*) begin
+    opcode = part_of_inst[6:0];
+    funct3 = part_of_inst[14:12];
+    funct7 = part_of_inst[31:25];
 
     if (ALU_op_sig == `OP_SIG_ADD) // different alu_op for state (in multi-cycle cpu)
         alu_op = `OP_ADD;

@@ -99,7 +99,7 @@ module cpu(input reset,       // positive reset signal
     .reset(reset),        // input
     .clk(clk),          // input
     .addr(addr),         // input
-    .din(din),          // input
+    .din(B),          // input
     .mem_read(MemRead),     // input
     .mem_write(MemWrite),    // input
     .dout(dout)          // output

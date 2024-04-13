@@ -48,18 +48,34 @@ assign is_ecall = (opcode == `ECALL) ? 1 : 0;
 always @(*) begin
     case (cur_state)
         `S_IF: begin
-            ALUSrcA = 0;
-            ALUSrcB = `SrcB_none;
-            ALU_op_sig = `OP_SIG_ADD;
-            IorD = 0;
-            IRWrite = 1;
-            MemRead = 1;
-            MemWrite = 0;
-            MemtoReg = 0;
-            PCWrite = 0;
-            PCWriteNotCond = 0;
-            PCSource = 0;
-            RegWrite = 0;
+            if (is_ecall) begin
+                ALUSrcA = 0;
+                ALUSrcB = `SrcB_4;
+                ALU_op_sig = `OP_SIG_ADD;
+                IorD = 0;
+                IRWrite = 1;
+                MemRead = 1;
+                MemWrite = 0;
+                MemtoReg = 0;
+                PCWrite = 1;
+                PCWriteNotCond = 0;
+                PCSource = 0;
+                RegWrite = 0;
+            end
+            else begin
+                ALUSrcA = 0;
+                ALUSrcB = `SrcB_none;
+                ALU_op_sig = `OP_SIG_ADD;
+                IorD = 0;
+                IRWrite = 1;
+                MemRead = 1;
+                MemWrite = 0;
+                MemtoReg = 0;
+                PCWrite = 0;
+                PCWriteNotCond = 0;
+                PCSource = 0;
+                RegWrite = 0;
+            end
         end
         `S_ID: begin
             ALUSrcA = 0;
@@ -259,44 +275,45 @@ end
 always @(*) begin
     if (is_ecall)
         next_state = `S_IF;
-    case (cur_state)
-        `S_IF: next_state = `S_ID;
-        `S_ID: begin
-            if (opcode == `JAL || opcode == `JALR)
-                next_state = `S_WB;
-            else
-                next_state = `S_EX_1;
-            // else if (opcode == `BRANCH)
-            //     next_state = `S_EX_1;
-            // else
-            //     next_state = `S_EX_2;
-        end
-        `S_EX_1: begin
-            if (opcode == `BRANCH)
-                if (!alu_bcond) // branch not taken
-                    next_state = `S_IF;
-                else // branch taken
+    else
+        case (cur_state)
+            `S_IF: next_state = `S_ID;
+            `S_ID: begin
+                if (opcode == `JAL || opcode == `JALR)
+                    next_state = `S_WB;
+                else
+                    next_state = `S_EX_1;
+                // else if (opcode == `BRANCH)
+                //     next_state = `S_EX_1;
+                // else
+                //     next_state = `S_EX_2;
+            end
+            `S_EX_1: begin
+                if (opcode == `BRANCH)
+                    if (!alu_bcond) // branch not taken
+                        next_state = `S_IF;
+                    else // branch taken
+                        next_state = `S_EX_2;
+                else
                     next_state = `S_EX_2;
-            else
-                next_state = `S_EX_2;
-        end
-        `S_EX_2: begin
-            if (opcode == `ARITHMETIC || opcode == `ARITHMETIC_IMM)
-                next_state = `S_WB;
-            else if (opcode == `LOAD || opcode == `STORE)
-                next_state = `S_MEM;
-            else // opcode == `BRANCH, branch taken
-                next_state = `S_IF;
-        end
-        `S_MEM: begin
-            if (opcode == `LOAD)
-                next_state = `S_WB;
-            else // opcode == `STORE
-                next_state = `S_IF;
-        end
-        `S_WB: next_state = `S_IF;
-        default: next_state = `S_IF;
-    endcase
+            end
+            `S_EX_2: begin
+                if (opcode == `ARITHMETIC || opcode == `ARITHMETIC_IMM)
+                    next_state = `S_WB;
+                else if (opcode == `LOAD || opcode == `STORE)
+                    next_state = `S_MEM;
+                else // opcode == `BRANCH, branch taken
+                    next_state = `S_IF;
+            end
+            `S_MEM: begin
+                if (opcode == `LOAD)
+                    next_state = `S_WB;
+                else // opcode == `STORE
+                    next_state = `S_IF;
+            end
+            `S_WB: next_state = `S_IF;
+            default: next_state = `S_IF;
+        endcase
 end
 
 // change state with posedge clock
