@@ -122,7 +122,7 @@ always @(*) begin
             end
             else if (opcode == `ARITHMETIC_IMM || opcode == `LOAD || opcode == `STORE) begin
                 ALUSrcA = 1;
-                ALUSrcB = `SrcB_reg;
+                ALUSrcB = `SrcB_imm;
                 ALU_op_sig = `OP_SIG_ALU;
                 IorD = 0;
                 IRWrite = 0;
@@ -266,6 +266,10 @@ always @(*) begin
                 next_state = `S_WB;
             else
                 next_state = `S_EX_1;
+            // else if (opcode == `BRANCH)
+            //     next_state = `S_EX_1;
+            // else
+            //     next_state = `S_EX_2;
         end
         `S_EX_1: begin
             if (opcode == `BRANCH)
