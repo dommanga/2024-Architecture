@@ -1,8 +1,8 @@
 
 `include "opcodes.v"
 
-`define OP_SIG_ADD 1b'0
-`define OP_SIG_ALU 1b'1
+`define OP_SIG_ADD 1'b0
+`define OP_SIG_ALU 1'b1
 
 module ALUControlUnit (
     input [31:0] part_of_inst,
@@ -17,7 +17,7 @@ wire unused = | part_of_inst[31:0];
 
 always @(*) begin
 
-    if (alu_op_sig == `OP_SIG_ADD) // different alu_op for state (in multi-cycle cpu)
+    if (ALU_op_sig == `OP_SIG_ADD) // different alu_op for state (in multi-cycle cpu)
         alu_op = `OP_ADD;
     
     else // case for alu_op_sig == OP_SIG_ALU(R/I, B type)
