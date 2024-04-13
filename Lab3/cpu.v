@@ -60,16 +60,18 @@ module cpu(input reset,       // positive reset signal
   // ---------- Control Unit ----------
   ControlUnit ctrl_unit(
     .part_of_inst(),  // input
-    .is_jal(),        // output
-    .is_jalr(),       // output
-    .branch(),        // output
-    .mem_read(),      // output
-    .mem_to_reg(),    // output
-    .mem_write(),     // output
-    .alu_src(),       // output
-    .write_enable(),     // output
-    .pc_to_reg(),     // output
-    .is_ecall()       // output (ecall inst)
+    .ALUSrcA(),        // output
+    .ALUSrcB(),       // output
+    .ALU_op_sig(),        // output
+    .IorD(),      // output
+    .IRWrite(),    // output
+    .MemRead(),     // output
+    .MemWrite(),       // output
+    .MemtoReg(),     // output
+    .PCWrite(),     // output
+    .PCWriteNotCond(),       // output (ecall inst)
+    .PCSource(),          //output
+    .RegWrite()       //output
   );
 
   // ---------- Immediate Generator ----------
@@ -81,6 +83,7 @@ module cpu(input reset,       // positive reset signal
   // ---------- ALU Control Unit ----------
   ALUControlUnit alu_ctrl_unit(
     .part_of_inst(),  // input
+    .ALU_op_sig(),    // input
     .alu_op()         // output
   );
 

@@ -1,6 +1,8 @@
 
+`include "opcodes.v"
 
-module alu #(parameter data_width = 32) (
+
+module ALU #(parameter data_width = 32) (
     input [3 : 0] alu_op,
 	input [data_width - 1 : 0] alu_in_1, 
 	input [data_width - 1 : 0] alu_in_2, 
