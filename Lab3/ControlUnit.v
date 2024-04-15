@@ -283,10 +283,6 @@ always @(*) begin
                     next_state = `S_WB;
                 else
                     next_state = `S_EX_1;
-                // else if (opcode == `BRANCH)
-                //     next_state = `S_EX_1;
-                // else
-                //     next_state = `S_EX_2;
             end
             `S_EX_1: begin
                 if (opcode == `BRANCH)
