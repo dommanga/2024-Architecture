@@ -58,16 +58,16 @@ module cpu(input reset,       // positive reset signal
   // ---------- Update program counter ----------
   // PC must be updated on the rising edge (positive edge) of the clock.
   PC pc(
-    .reset(),       // input (Use reset to initialize PC. Initial value must be 0)
-    .clk(),         // input
+    .reset(reset),       // input (Use reset to initialize PC. Initial value must be 0)
+    .clk(clk),         // input
     .next_pc(),     // input
     .current_pc()   // output
   );
   
   // ---------- Instruction Memory ----------
   InstMemory imem(
-    .reset(),   // input
-    .clk(),     // input
+    .reset(reset),   // input
+    .clk(clk),     // input
     .addr(),    // input
     .dout()     // output
   );
@@ -82,8 +82,8 @@ module cpu(input reset,       // positive reset signal
 
   // ---------- Register File ----------
   RegisterFile reg_file (
-    .reset (),        // input
-    .clk (),          // input
+    .reset (reset),        // input
+    .clk (clk),          // input
     .rs1 (),          // input
     .rs2 (),          // input
     .rd (),           // input
@@ -134,7 +134,7 @@ module cpu(input reset,       // positive reset signal
     .alu_in_1(),    // input  
     .alu_in_2(),    // input
     .alu_result(),  // output
-    .alu_zero()     // output
+    .alu_bcond()     // output
   );
 
   // Update EX/MEM pipeline registers here
@@ -147,8 +147,8 @@ module cpu(input reset,       // positive reset signal
 
   // ---------- Data Memory ----------
   DataMemory dmem(
-    .reset (),      // input
-    .clk (),        // input
+    .reset (reset),      // input
+    .clk (clk),        // input
     .addr (),       // input
     .din (),        // input
     .mem_read (),   // input
