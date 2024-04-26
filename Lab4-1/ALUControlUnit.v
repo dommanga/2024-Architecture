@@ -2,7 +2,7 @@
 `include "opcodes.v"
 
 
-module alu_control_unit (
+module ALUControlUnit (
     input [31:0] part_of_inst,
     output reg [3:0] alu_op);
 
