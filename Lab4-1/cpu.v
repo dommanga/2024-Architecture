@@ -19,21 +19,23 @@ module cpu(input reset,       // positive reset signal
   // 1. You might need other pipeline registers that are not described below
   // 2. You might not need registers described below
   /***** IF/ID pipeline registers *****/
-  reg IF_ID_inst;           // will be used in ID stage
+  reg [31:0] IF_ID_inst;           // will be used in ID stage
   /***** ID/EX pipeline registers *****/
   // From the control unit
-  reg ID_EX_alu_op;         // will be used in EX stage
+  reg [3:0] ID_EX_alu_op;         // will be used in EX stage
   reg ID_EX_alu_src;        // will be used in EX stage
   reg ID_EX_mem_write;      // will be used in MEM stage
   reg ID_EX_mem_read;       // will be used in MEM stage
   reg ID_EX_mem_to_reg;     // will be used in WB stage
   reg ID_EX_reg_write;      // will be used in WB stage
   // From others
-  reg ID_EX_rs1_data;
-  reg ID_EX_rs2_data;
-  reg ID_EX_imm;
-  reg ID_EX_ALU_ctrl_unit_input;
-  reg ID_EX_rd;
+  reg [4:0] ID_EX_rs1;  // will be used in hazard detection
+  reg [4:0] ID_EX_rs2;  // will be used in hazard detection
+  reg [31:0] ID_EX_rs1_data;
+  reg [31:0] ID_EX_rs2_data;
+  reg [31:0] ID_EX_imm;
+  reg [31:0] ID_EX_ALU_ctrl_unit_input;
+  reg [4:0] ID_EX_rd;
 
   /***** EX/MEM pipeline registers *****/
   // From the control unit
@@ -43,17 +45,18 @@ module cpu(input reset,       // positive reset signal
   reg EX_MEM_mem_to_reg;    // will be used in WB stage
   reg EX_MEM_reg_write;     // will be used in WB stage
   // From others
-  reg EX_MEM_alu_out;
-  reg EX_MEM_dmem_data;
-  reg EX_MEM_rd;
+  reg [31:0] EX_MEM_alu_out;
+  reg [31:0] EX_MEM_dmem_data;
+  reg [4:0] EX_MEM_rd;
 
   /***** MEM/WB pipeline registers *****/
   // From the control unit
   reg MEM_WB_mem_to_reg;    // will be used in WB stage
   reg MEM_WB_reg_write;     // will be used in WB stage
   // From others
-  reg MEM_WB_mem_to_reg_src_1;
-  reg MEM_WB_mem_to_reg_src_2;
+  reg [31:0] MEM_WB_mem_to_reg_src_1;
+  reg [31:0] MEM_WB_mem_to_reg_src_2;
+  reg [4:0] MEM_WB_rd;
 
   // ---------- Update program counter ----------
   // PC must be updated on the rising edge (positive edge) of the clock.
@@ -104,7 +107,6 @@ module cpu(input reset,       // positive reset signal
     .alu_src(),       // output
     .write_enable(),  // output
     .pc_to_reg(),     // output
-    .alu_op(),        // output
     .is_ecall()       // output (ecall inst)
   );
 
