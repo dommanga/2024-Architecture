@@ -14,27 +14,27 @@ module ForwardingUnit (
     input [4:0] MEM_WB_rd,
     input EX_MEM_reg_write,
     input MEM_WB_reg_write,
-    output reg [1:0] forward_A,
-    output reg [1:0] forward_B
+    output reg [1:0] forwardA,
+    output reg [1:0] forwardB
 );
     
 always @(*) begin
 
     // for rs1
-    if (ID_EX_rs1 != _x0 && ID_EX_rs1 == EX_MEM_rd && EX_MEM_reg_write)
-        forward_A = `for_MEM;
-    else if (ID_EX_rs1 != _x0 && ID_EX_rs1 == MEM_WB_rd && MEM_WB_reg_write)
-        forward_A = `for_WB;
+    if (ID_EX_rs1 != `_x0 && ID_EX_rs1 == EX_MEM_rd && EX_MEM_reg_write)
+        forwardA = `for_MEM;
+    else if (ID_EX_rs1 != `_x0 && ID_EX_rs1 == MEM_WB_rd && MEM_WB_reg_write)
+        forwardA = `for_WB;
     else
-        forward_A = `for_reg;
+        forwardA = `for_reg;
 
     // for rs2
-    if (ID_EX_rs2 != _x0 && ID_EX_rs2 == EX_MEM_rd && EX_MEM_reg_write)
-        forward_B = `for_MEM;
-    else if (ID_EX_rs1 != _x0 && ID_EX_rs1 == MEM_WB_rd && MEM_WB_reg_write)
-        forward_B = `for_WB;
+    if (ID_EX_rs2 != `_x0 && ID_EX_rs2 == EX_MEM_rd && EX_MEM_reg_write)
+        forwardB = `for_MEM;
+    else if (ID_EX_rs1 != `_x0 && ID_EX_rs1 == MEM_WB_rd && MEM_WB_reg_write)
+        forwardB = `for_WB;
     else
-        forward_B = `for_reg;
+        forwardB = `for_reg;
 end
 
 

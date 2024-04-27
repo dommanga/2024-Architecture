@@ -7,7 +7,7 @@ module HazardDetectionUnit (
     input [4:0] ID_EX_rd,
     output reg is_hazard,
     output reg IF_ID_inst_write,
-    output reg PCwrite);
+    output reg PCWrite);
 
 always @(*) begin
 
@@ -15,12 +15,12 @@ always @(*) begin
         // stall pipeline
         is_hazard = 1;
         IF_ID_inst_write = 0;
-        PCwrite = 0;
+        PCWrite = 0;
     end
     else begin
         is_hazard = 0;
         IF_ID_inst_write = 1;
-        PCwrite = 1;
+        PCWrite = 1;
     end
 
 end

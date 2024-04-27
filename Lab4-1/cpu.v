@@ -14,15 +14,13 @@ module cpu(input reset,       // positive reset signal
            output is_halted, // Whehther to finish simulation
            output [31:0]print_reg[0:31]); // Whehther to finish simulation
   /***** Wire declarations *****/
-  wire [`WordBit-1:0] next_pc, current_pc;
+  wire PCWrite, is_hazard, IF_ID_inst_write; //Hazrd detection unit
 
-  wire [1:0] PCWrite, is_hazard, IF_ID_inst_write;//Hazrd detection unit
+  wire [3:0] alu_op;// alu_ctrl_unit 
 
-  wire [1:0] alu_op;// alu_ctrl_unit 
+  wire alu_bcond; // 일단은 해놓고 나중에 오류나면 고치기 
 
-  wire [1:0] alu_bcond; // 일단은 해놓고 나중에 오류나면 고치기 
-
-  wire [1:0] is_ecall, mem_read, mem_to_reg, mem_write, alu_src, write_enable, pc_to_reg;//Control unit
+  reg is_ecall, mem_read, mem_to_reg, mem_write, alu_src, write_enable, pc_to_reg;//Control unit
 
   wire [1:0] forwardA, forwardB;// Forwarding Unit
 
@@ -34,7 +32,7 @@ module cpu(input reset,       // positive reset signal
 
   wire [`WordBit-1:0] alu_result; // alu
 
-  wire [`WordBit-1:0] forwardA_out, forwardB_out; // Forwarding Unit 
+  wire [`WordBit-1:0] forwardA_mux_out, forwardB_mux_out; // Forwarding Unit 
 
   wire [`WordBit-1:0] ALUSrc_mux_out, mem_data_out;
 
@@ -55,6 +53,7 @@ module cpu(input reset,       // positive reset signal
   reg ID_EX_mem_read;       // will be used in MEM stage
   reg ID_EX_mem_to_reg;     // will be used in WB stage
   reg ID_EX_reg_write;      // will be used in WB stage
+  reg ID_EX_is_halted;
   // From others
   reg [4:0] ID_EX_rs1;  // will be used in hazard detection
   reg [4:0] ID_EX_rs2;  // will be used in hazard detection
@@ -68,6 +67,7 @@ module cpu(input reset,       // positive reset signal
   // From the control unit
   reg EX_MEM_mem_write;     // will be used in MEM stage
   reg EX_MEM_mem_read;      // will be used in MEM stage
+  reg EX_MEM_is_halted;
 //  reg EX_MEM_is_branch;     // will be used in MEM stage
   reg EX_MEM_mem_to_reg;    // will be used in WB stage
   reg EX_MEM_reg_write;     // will be used in WB stage
@@ -80,25 +80,26 @@ module cpu(input reset,       // positive reset signal
   // From the control unit
   reg MEM_WB_mem_to_reg;    // will be used in WB stage
   reg MEM_WB_reg_write;     // will be used in WB stage
+  reg MEM_WB_is_halted;
   // From others
   reg [31:0] MEM_WB_mem_to_reg_src_1;
   reg [31:0] MEM_WB_mem_to_reg_src_2;
   reg [4:0] MEM_WB_rd;
-  assign rs1_in = is_ecall ? 17 : IR[19:15];
+
+
+  assign rs1_in  =  is_ecall ? 17 : IF_ID_inst[19:15];
+  assign is_halted = MEM_WB_is_halted;
 
   // ---------- Update program counter ----------
   // PC must be updated on the rising edge (positive edge) of the clock.
   PC pc(
     .reset(reset),       // input (Use reset to initialize PC. Initial value must be 0)
     .clk(clk),         // input
-    .PCWrite(PCWrite),
+    .PCWrite(PCWrite),  // input
     .next_pc(next_pc),     // input
     .current_pc(current_pc)   // output
   );  
-  /* PC module 추가사항
-  - PCWrite input 추가 (input, 1bit)
-  - PCWrite=1 조건 하에 pc update 수행
-  */
+
   // ---------- Adder -----------
   adder Add_PC_4(
     .in_1(current_pc),  // input
@@ -114,14 +115,13 @@ module cpu(input reset,       // positive reset signal
     .dout(dout)     // output
   );
 
-
   // Update IF/ID pipeline registers here
   always @(posedge clk) begin
-    if (reset) begin
-      IF_ID_inst <= 0; //모든 레지스터 값 0
+    if (reset || is_ecall) begin
+      IF_ID_inst <= 0; 
     end
     else begin
-      IF_ID_inst <= dout; // reg에 wire를 연결해줘도 됨?
+      IF_ID_inst <= dout; 
     end
   end
 
@@ -133,15 +133,8 @@ module cpu(input reset,       // positive reset signal
     .ID_EX_rd(ID_EX_rd),    //input
     .is_hazard(is_hazard),   //output
     .IF_ID_inst_write(IF_ID_inst_write),    //output
-    .PCwrite(PCWrite),   //output
+    .PCWrite(PCWrite)   //output
   );
-  /* 맞는지 확인
-  - ID_EX_rd register 똑같이 쓰는 거 맞음?
-  */
-
-
-  /* 지미 mux_2_to_1 Lab_4-1에 추가해달라고 하기
-  is_ecall logic cpu에 구현 */
 
   // ---------- Register File ----------
   RegisterFile reg_file (
@@ -149,7 +142,7 @@ module cpu(input reset,       // positive reset signal
     .clk (clk),          // input
     .rs1 (rs1_in),          // input
     .rs2 (IF_ID_inst[24:20]),          // input
-    .rd (MEM_WB_rd),           // input  -> 레지스터 값 그대로 집어넣음 
+    .rd (MEM_WB_rd),           // input  
     .rd_din (rd_din),       // input
     .write_enable (MEM_WB_reg_write),    // input
     .rs1_dout (rs1_dout),     // output
@@ -160,58 +153,71 @@ module cpu(input reset,       // positive reset signal
 
   // ---------- Control Unit ----------
   ControlUnit ctrl_unit (
-    .part_of_inst(IF_ID_inst[6:0]),  // input
-    .mem_read(mem_read),      // output
-    .mem_to_reg(mem_to_reg),    // output
-    .mem_write(mem_write),     // output
-    .alu_src(alu_src),       // output
-    .write_enable(write_enable),  // output
-    .pc_to_reg(pc_to_reg),     // output
-    .is_ecall(is_ecall)       // output (ecall inst)
+    .part_of_inst (IF_ID_inst[6:0]),  // input
+    .mem_read (mem_read),      // output
+    .mem_to_reg (mem_to_reg),    // output
+    .mem_write (mem_write),     // output
+    .alu_src (alu_src),       // output
+    .write_enable (write_enable),  // output
+    .pc_to_reg (pc_to_reg),     // output
+    .is_ecall (is_ecall)       // output (ecall inst)
   );
 
   // ---------- Immediate Generator ----------
   ImmediateGenerator imm_gen(
-    .part_of_inst(IF_ID_inst),  // input
-    .imm_gen_out(imm_gen_out)    // output
+    .part_of_inst (IF_ID_inst),  // input
+    .imm_gen_out (imm_gen_out)    // output
   );
-
-
-
 
   // Update ID/EX pipeline registers here
   always @(posedge clk) begin
-    if (reset) begin
-      ID_EX_alu_src<=0;      
-      ID_EX_mem_write<=0;    
-      ID_EX_mem_read<=0;     
-      ID_EX_mem_to_reg<=0;   
-      ID_EX_reg_write<=0;    
-      ID_EX_rs1<=0;  
-      ID_EX_rs2<=0;  
-      ID_EX_rs1_data<=0;
-      ID_EX_rs2_data<=0;
-      ID_EX_imm<=0;
-      ID_EX_ALU_ctrl_unit_input<=0;
-      ID_EX_rd<=0;
+
+    ID_EX_is_halted <= is_ecall && (rs1_dout == 10);
+
+    if (reset || is_ecall) begin
+      ID_EX_alu_src <= 0;      
+      ID_EX_mem_write <= 0;    
+      ID_EX_mem_read <= 0;     
+      ID_EX_mem_to_reg <= 0;   
+      ID_EX_reg_write <= 0;    
+      ID_EX_rs1 <= 0;  
+      ID_EX_rs2 <= 0;  
+      ID_EX_rs1_data <= 0;
+      ID_EX_rs2_data <= 0;
+      ID_EX_imm <= 0;
+      ID_EX_ALU_ctrl_unit_input <= 0;
+      ID_EX_rd <= 0;
     end
     else begin
-      ID_EX_alu_src<=alu_src;      
-      ID_EX_mem_write<=mem_write;    
-      ID_EX_mem_read<=mem_read;     
-      ID_EX_mem_to_reg<=mem_to_reg;   
-      ID_EX_reg_write<=write_enable;    
-      ID_EX_rs1<=IF_ID_inst[19:15];  
-      ID_EX_rs2<=IF_ID_inst[24:20];  
-      ID_EX_rs1_data<=rs1_dout;
-      ID_EX_rs2_data<=rs2_dout;
-      ID_EX_imm<=imm_gen_out;
-      ID_EX_ALU_ctrl_unit_input<=IF_ID_inst;
-      ID_EX_rd<=IF_ID_inst[11:7];
+      ID_EX_alu_src <= alu_src;      
+      ID_EX_mem_write <= mem_write;    
+      ID_EX_mem_read <= mem_read;     
+      ID_EX_mem_to_reg <= mem_to_reg;   
+      ID_EX_reg_write <= write_enable;    
+      ID_EX_rs1 <= IF_ID_inst[19:15];  
+      ID_EX_rs2 <= IF_ID_inst[24:20];  
+      ID_EX_rs1_data <= rs1_dout;
+      ID_EX_rs2_data <= rs2_dout;
+      ID_EX_imm <= imm_gen_out;
+      ID_EX_ALU_ctrl_unit_input <= IF_ID_inst;
+      ID_EX_rd <= IF_ID_inst[11:7];
     end
   end
+
+  // ---------- Forwarding unit ----------
+  ForwardingUnit forwarding_unit (
+    .ID_EX_rs1(ID_EX_rs1),   // input
+    .ID_EX_rs2(ID_EX_rs2),   // input
+    .EX_MEM_rd(EX_MEM_rd),   // input
+    .MEM_WB_rd(MEM_WB_rd),   // input
+    .EX_MEM_reg_write(EX_MEM_reg_write),   // input
+    .MEM_WB_reg_write(MEM_WB_reg_write),   // input
+    .forwardA (forwardA),  // output
+    .forwardB (forwardB)   // output
+  );
+
   // ---------- forwardA_mux ---------- 
-  mux_4_to_1 forwardA_mux(
+  mux_4_to_1 forwardA_mux (
     .A (ID_EX_rs1_data),    // input
     .B (rd_din),  // input
     .C (EX_MEM_alu_out),  // input
@@ -221,7 +227,7 @@ module cpu(input reset,       // positive reset signal
   );
 
   // ---------- forwardB mux ----------
-  mux_4_to_1 forwardB mux(
+  mux_4_to_1 forwardB_mux (
     .A (ID_EX_rs2_data),    // input
     .B (rd_din),  // input
     .C (EX_MEM_alu_out),  // input
@@ -229,25 +235,13 @@ module cpu(input reset,       // positive reset signal
     .control (forwardB),  // input
     .result (forwardB_mux_out) // output
   );
+
   // ---------- ALUSrc mux -------------
-  mux_2_to_1 ALUSrc_mux(
-    .A (ID_EX_imm),    // input
-    .B (forwardB_mux_out)  // input
-    .Enable (ID_EX_alu_src),         // input
-    .C (ID_EX_alu_src)           // output
-  );
-
-
-  // ---------- Forwarding unit ----------
-  ForwardingUnit forwarding_unit(
-    ID_EX_rs1(ID_EX_rs1),
-    ID_EX_rs2(ID_EX_rs2),
-    EX_MEM_rd(EX_MEM_rd),
-    MEM_WB_rd(MEM_WB_rd),
-    EX_MEM_reg_write(EX_MEM_reg_write),
-    MEM_WB_reg_write(MEM_WB_reg_write),
-    forward_A(forwardA),
-    forward_B(forwardB)
+  mux_2_to_1 ALUSrc_mux (
+    .A (forwardB_mux_out),    // input
+    .B (ID_EX_imm),  // input
+    .Enable (ID_EX_alu_src),   // input
+    .C (ALUSrc_mux_out)           // output
   );
 
   // ---------- ALU Control Unit ----------
@@ -264,32 +258,34 @@ module cpu(input reset,       // positive reset signal
     .alu_result(alu_result),  // output
     .alu_bcond(alu_bcond)     // output
   );
-  /*alu_bcond - 일단은 사용, 오류나면 나중에 고치기 */
 
   // Update EX/MEM pipeline registers here
   always @(posedge clk) begin
-    if (reset) begin
-      EX_MEM_mem_write=0;     
-      EX_MEM_mem_read=0;      
-      EX_MEM_mem_to_reg=0;    
-      EX_MEM_reg_write=0;     
-      EX_MEM_alu_out=0;
-      EX_MEM_dmem_data=0;
-      EX_MEM_rd=0;
+
+    EX_MEM_is_halted <= ID_EX_is_halted;
+
+    if (reset || is_ecall) begin
+      EX_MEM_mem_write <= 0;     
+      EX_MEM_mem_read <= 0;      
+      EX_MEM_mem_to_reg <= 0;    
+      EX_MEM_reg_write <= 0;     
+      EX_MEM_alu_out <= 0;
+      EX_MEM_dmem_data <= 0;
+      EX_MEM_rd <= 0;
     end
     else begin
-      EX_MEM_mem_write=ID_EX_mem_write;     
-      EX_MEM_mem_read=ID_EX_mem_read;      
-      EX_MEM_mem_to_reg=ID_EX_mem_to_reg;    
-      EX_MEM_reg_write=ID_EX_reg_write;     
-      EX_MEM_alu_out=alu_result;
-      EX_MEM_dmem_data=ALUSrc_mux_out;
-      EX_MEM_rd=ID_EX_rd;
+      EX_MEM_mem_write <= ID_EX_mem_write;     
+      EX_MEM_mem_read <= ID_EX_mem_read;      
+      EX_MEM_mem_to_reg <= ID_EX_mem_to_reg;    
+      EX_MEM_reg_write <= ID_EX_reg_write;     
+      EX_MEM_alu_out <= alu_result;
+      EX_MEM_dmem_data <= ALUSrc_mux_out;
+      EX_MEM_rd <= ID_EX_rd;
     end
   end
 
   // ---------- Data Memory ----------
-  DataMemory dmem(
+  DataMemory dmem (
     .reset (reset),      // input
     .clk (clk),        // input
     .addr (EX_MEM_alu_out),       // input
@@ -299,32 +295,33 @@ module cpu(input reset,       // positive reset signal
     .dout (mem_data_out)        // output
   );
 
-
   // Update MEM/WB pipeline registers here
   always @(posedge clk) begin
-    if (reset) begin
-      MEM_WB_mem_to_reg=0;   
-      MEM_WB_reg_write=0;    
-      MEM_WB_mem_to_reg_src_1=0;
-      MEM_WB_mem_to_reg_src_2=0;
-      MEM_WB_rd=0;
+
+    MEM_WB_is_halted <= EX_MEM_is_halted;
+    
+    if (reset || is_ecall) begin
+      MEM_WB_mem_to_reg <= 0;   
+      MEM_WB_reg_write <= 0;    
+      MEM_WB_mem_to_reg_src_1 <= 0;
+      MEM_WB_mem_to_reg_src_2 <= 0;
+      MEM_WB_rd <= 0;
     end
     else begin
-      MEM_WB_mem_to_reg=EX_MEM_mem_to_reg;   
-      MEM_WB_reg_write=EX_MEM_reg_write;    
-      MEM_WB_mem_to_reg_src_1=mem_data_out;
-      MEM_WB_mem_to_reg_src_2=EX_MEM_alu_out;
-      MEM_WB_rd=EX_MEM_rd;
+      MEM_WB_mem_to_reg <= EX_MEM_mem_to_reg;   
+      MEM_WB_reg_write <= EX_MEM_reg_write;    
+      MEM_WB_mem_to_reg_src_1 <= mem_data_out;
+      MEM_WB_mem_to_reg_src_2 <= EX_MEM_alu_out;
+      MEM_WB_rd <= EX_MEM_rd;
     end
+  end
 
-    // ---------- mem_to_reg_mux -------------
-  mux_2_to_1 mem_to_reg_mux(
-    .A (MEM_WB_mem_to_reg_src_2),    // input
-    .B (MEM_WB_mem_to_reg_src_1)  // input
+  // ---------- mem_to_reg_mux -------------
+  mux_2_to_1 mem_to_reg_mux (
+    .A (MEM_WB_mem_to_reg_src_1),  // input
+    .B (MEM_WB_mem_to_reg_src_2),    // input
     .Enable (MEM_WB_reg_write),         // input
     .C (rd_din)           // output
   );
-  end
-
   
 endmodule
