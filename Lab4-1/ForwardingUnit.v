@@ -31,7 +31,7 @@ always @(*) begin
     // for rs2
     if (ID_EX_rs2 != `_x0 && ID_EX_rs2 == EX_MEM_rd && EX_MEM_reg_write)
         forwardB = `for_MEM;
-    else if (ID_EX_rs1 != `_x0 && ID_EX_rs1 == MEM_WB_rd && MEM_WB_reg_write)
+    else if (ID_EX_rs2 != `_x0 && ID_EX_rs2 == MEM_WB_rd && MEM_WB_reg_write)
         forwardB = `for_WB;
     else
         forwardB = `for_reg;

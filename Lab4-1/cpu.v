@@ -26,7 +26,7 @@ module cpu(input reset,       // positive reset signal
 
   wire [`WordBit-1:0] next_pc, current_pc, dout; //IF
 
-  wire [`WordBit-1:0] rd_din, rs1_dout, rs2_dout; 
+  wire [`WordBit-1:0] rd_din, rs1_dout, rs2_dout, rs1_17; 
 
   wire [`WordBit-1:0] imm_gen_out; //Imm
 
@@ -87,7 +87,8 @@ module cpu(input reset,       // positive reset signal
   reg [4:0] MEM_WB_rd;
 
 
-  assign rs1_in  =  is_ecall ? 17 : IF_ID_inst[19:15];
+  assign rs1_in = is_ecall ? 17 : IF_ID_inst[19:15];
+  assign rs1_17 = EX_MEM_rd == 17 ? EX_MEM_alu_out : rs1_dout; // data forwarding
   assign is_halted = MEM_WB_is_halted;
 
   // ---------- Update program counter ----------
@@ -117,7 +118,7 @@ module cpu(input reset,       // positive reset signal
 
   // Update IF/ID pipeline registers here
   always @(posedge clk) begin
-    if (reset || is_ecall) begin
+    if (reset) begin
       IF_ID_inst <= 0; 
     end
     else if (IF_ID_inst_write) begin
@@ -131,10 +132,15 @@ module cpu(input reset,       // positive reset signal
     .IF_ID_rs2(IF_ID_inst[24:20]),    //input
     .ID_EX_mem_read(ID_EX_mem_read),   //input
     .ID_EX_rd(ID_EX_rd),    //input
+    .EX_MEM_rd(EX_MEM_rd),    //input
+    .is_ecall(is_ecall),    //input
+    .ID_EX_reg_write(ID_EX_reg_write),    //input
+    .EX_MEM_reg_write(EX_MEM_reg_write),    //input
     .is_hazard(is_hazard),   //output
     .IF_ID_inst_write(IF_ID_inst_write),    //output
     .PCWrite(PCWrite)   //output
   );
+
 
   // ---------- Register File ----------
   RegisterFile reg_file (
@@ -172,7 +178,7 @@ module cpu(input reset,       // positive reset signal
   // Update ID/EX pipeline registers here
   always @(posedge clk) begin
 
-    ID_EX_is_halted <= is_ecall && (rs1_dout == 10);
+    ID_EX_is_halted <= is_ecall && (rs1_17 == 10);
 
     if (reset || is_hazard) begin
       ID_EX_alu_src <= 0;      
