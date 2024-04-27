@@ -120,7 +120,7 @@ module cpu(input reset,       // positive reset signal
     if (reset || is_ecall) begin
       IF_ID_inst <= 0; 
     end
-    else begin
+    else if (IF_ID_inst_write) begin
       IF_ID_inst <= dout; 
     end
   end
@@ -174,7 +174,7 @@ module cpu(input reset,       // positive reset signal
 
     ID_EX_is_halted <= is_ecall && (rs1_dout == 10);
 
-    if (reset || is_ecall) begin
+    if (reset || is_hazard) begin
       ID_EX_alu_src <= 0;      
       ID_EX_mem_write <= 0;    
       ID_EX_mem_read <= 0;     
@@ -264,7 +264,7 @@ module cpu(input reset,       // positive reset signal
 
     EX_MEM_is_halted <= ID_EX_is_halted;
 
-    if (reset || is_ecall) begin
+    if (reset) begin
       EX_MEM_mem_write <= 0;     
       EX_MEM_mem_read <= 0;      
       EX_MEM_mem_to_reg <= 0;    
@@ -279,7 +279,7 @@ module cpu(input reset,       // positive reset signal
       EX_MEM_mem_to_reg <= ID_EX_mem_to_reg;    
       EX_MEM_reg_write <= ID_EX_reg_write;     
       EX_MEM_alu_out <= alu_result;
-      EX_MEM_dmem_data <= ALUSrc_mux_out;
+      EX_MEM_dmem_data <= forwardB_mux_out;
       EX_MEM_rd <= ID_EX_rd;
     end
   end
@@ -300,7 +300,7 @@ module cpu(input reset,       // positive reset signal
 
     MEM_WB_is_halted <= EX_MEM_is_halted;
     
-    if (reset || is_ecall) begin
+    if (reset) begin
       MEM_WB_mem_to_reg <= 0;   
       MEM_WB_reg_write <= 0;    
       MEM_WB_mem_to_reg_src_1 <= 0;
@@ -310,8 +310,8 @@ module cpu(input reset,       // positive reset signal
     else begin
       MEM_WB_mem_to_reg <= EX_MEM_mem_to_reg;   
       MEM_WB_reg_write <= EX_MEM_reg_write;    
-      MEM_WB_mem_to_reg_src_1 <= mem_data_out;
-      MEM_WB_mem_to_reg_src_2 <= EX_MEM_alu_out;
+      MEM_WB_mem_to_reg_src_1 <= EX_MEM_alu_out;
+      MEM_WB_mem_to_reg_src_2 <= mem_data_out;
       MEM_WB_rd <= EX_MEM_rd;
     end
   end
@@ -320,7 +320,7 @@ module cpu(input reset,       // positive reset signal
   mux_2_to_1 mem_to_reg_mux (
     .A (MEM_WB_mem_to_reg_src_1),  // input
     .B (MEM_WB_mem_to_reg_src_2),    // input
-    .Enable (MEM_WB_reg_write),         // input
+    .Enable (MEM_WB_mem_to_reg),         // input
     .C (rd_din)           // output
   );
   
