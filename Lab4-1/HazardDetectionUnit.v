@@ -5,10 +5,8 @@ module HazardDetectionUnit (
     input [4:0] IF_ID_rs2,
     input ID_EX_mem_read,
     input [4:0] ID_EX_rd,
-    input [4:0] EX_MEM_rd,
     input is_ecall, 
     input ID_EX_reg_write,
-    input EX_MEM_reg_write,
     output reg is_hazard,
     output reg IF_ID_inst_write,
     output reg PCWrite);

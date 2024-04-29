@@ -132,10 +132,8 @@ module cpu(input reset,       // positive reset signal
     .IF_ID_rs2(IF_ID_inst[24:20]),    //input
     .ID_EX_mem_read(ID_EX_mem_read),   //input
     .ID_EX_rd(ID_EX_rd),    //input
-    .EX_MEM_rd(EX_MEM_rd),    //input
     .is_ecall(is_ecall),    //input
     .ID_EX_reg_write(ID_EX_reg_write),    //input
-    .EX_MEM_reg_write(EX_MEM_reg_write),    //input
     .is_hazard(is_hazard),   //output
     .IF_ID_inst_write(IF_ID_inst_write),    //output
     .PCWrite(PCWrite)   //output
