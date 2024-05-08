@@ -129,7 +129,7 @@ module cpu(input reset,       // positive reset signal
   );  
 
   // ----------- Branch Predictor ------------
-  BranchPredictor branch_predictor(
+  BranchPredictor_old branch_predictor(
     .current_pc(current_pc),
     .pred_pc(pred_pc)
   );
