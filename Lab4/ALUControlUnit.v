@@ -16,6 +16,7 @@ always @(*) begin
     case (opcode)
         `LOAD,
         `STORE: alu_op = `OP_ADD;
+        `JAL,
         `JALR: alu_op = `OP_ADD;
         `BRANCH: begin
             if (funct3 == `FUNCT3_BEQ)
