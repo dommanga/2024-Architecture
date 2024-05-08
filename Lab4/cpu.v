@@ -353,7 +353,7 @@ module cpu(input reset,       // positive reset signal
   // ---------- PCSrc2 mux -------------
   mux_2_to_1 PCSrc2_mux (
     .A (PCSrc1_mux_out),    // input
-    .B (alu_result),  // input
+    .B (ID_EX_rs1_data + ID_EX_imm),  // input
     .Enable (PCSrc2),   // input
     .C (actual_pc)    // output
   );
