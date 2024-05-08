@@ -3,8 +3,8 @@
 // calculate branch address when taken (T), and determine actual branch condition (T or NT)
 module BranchCalculator (
     input [31:0] ID_EX_PC,
+    input [31:0] ID_EX_rs1_data,
     input [31:0] ID_EX_imm,
-    input [31:0] alu_result,
     input alu_bcond,
     input ID_EX_branch,
     input ID_EX_is_jal,
@@ -15,24 +15,27 @@ module BranchCalculator (
     output reg update_B_target
 );
 
-wire [31:0] PC_imm_out;
+wire [31:0] is_jalr_mux_out;
+wire [31:0] jump_addr;
 
+mux_2_to_1 is_jalr_mux (
+.A (ID_EX_PC),    // input
+.B (ID_EX_rs1_data),  // input
+.Enable (ID_EX_is_jalr),   // input
+.C (is_jalr_mux_out)           // output
+);
 
-adder Add_PC_imm(
-.in_1(ID_EX_PC),  // input
+adder Add_imm(
+.in_1(is_jalr_mux_out),  // input
 .in_2(ID_EX_imm),  // input
-.out(PC_imm_out)    //output
+.out(jump_addr)    //output
 );
 
 always @(*) begin
 
     // calculate branch target and condition
-    if (ID_EX_is_jal || (ID_EX_branch && alu_bcond) begin
-        actual_pc = PC_imm_out;
-        actual_taken = 1;
-    end
-    else if (ID_EX_is_jalr) begin
-        actual_pc = alu_result;
+    if (ID_EX_is_jal || ID_EX_is_jalr || (ID_EX_branch && alu_bcond)) begin
+        actual_pc = jump_addr;
         actual_taken = 1;
     end
     else begin
