@@ -22,7 +22,12 @@ module InstMemory #(parameter MEM_DEPTH = 1024) (input reset,
           /* verilator lint_on BLKSEQ */
           // DO NOT TOUCH COMMENT ABOVE
       // Provide path of the file including instructions with binary format
-      $readmemh("./student_tb/non-controlflow_mem.txt", mem);
+      $readmemh("/root/2024-Architecture/Lab4/student_tb/basic_mem.txt", mem);
+      //  /root/2024-Architecture/Lab4/student_tb/basic_mem.txt
+      //  /root/2024-Architecture/Lab4/student_tb/ifelse_mem.txt
+      //  /root/2024-Architecture/Lab4/student_tb/loop_mem.txt
+      //  /root/2024-Architecture/Lab4/student_tb/non-controlflow_mem.txt
+      //  /root/2024-Architecture/Lab4/student_tb/recursive_mem.txt
     end
   end
 

@@ -11,32 +11,38 @@
 
 module cpu(input reset,       // positive reset signal
            input clk,         // clock signal
-           output is_halted, // Whehther to finish simulation
+           output is_halted,  // Whehther to finish simulation
            output [31:0]print_reg[0:31]); // Whehther to finish simulation
   /***** Wire declarations *****/
-  wire PCWrite, is_hazard, IF_ID_inst_write; //Hazrd detection unit
+  wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
-  wire [3:0] alu_op;// alu_ctrl_unit 
+  reg is_ecall, mem_read, mem_to_reg, mem_write, alu_src, write_enable, pc_to_reg, is_jal, is_jalr, branch ; // Control unit
+// 왜 이전엔 reg로 설정되어 있는지 
+  wire [1:0] forwardA, forwardB; // Forwarding Unit
 
-  wire alu_bcond; // 일단은 해놓고 나중에 오류나면 고치기 
+  wire [`WordBit-1:0] next_pc, current_pc, dout; // PC, Imem, Branch Predictor
 
-  reg is_ecall, mem_read, mem_to_reg, mem_write, alu_src, write_enable, pc_to_reg;//Control unit
+  wire [`WordBit-1:0] next_pc_jump, PCSrc1_mux_out, pc_4_out, actual_pc, pred_pc; // PC Value
 
-  wire [1:0] forwardA, forwardB;// Forwarding Unit
+  wire [`WordBit-1:0] rd_din, rs1_dout, rs2_dout, rs1_17,  pc_to_reg_mux_out; // Register File
 
-  wire [`WordBit-1:0] next_pc, current_pc, dout; //IF
+  wire [4:0] rs1_in; // Register File 
 
-  wire [`WordBit-1:0] rd_din, rs1_dout, rs2_dout, rs1_17; 
+  wire [`WordBit-1:0] imm_gen_out; // Imm
 
-  wire [`WordBit-1:0] imm_gen_out; //Imm
+  wire [`WordBit-1:0] alu_result, ALUSrc_mux_out; // alu
 
-  wire [`WordBit-1:0] alu_result; // alu
+  wire alu_bcond; // alu
+
+  wire [3:0] alu_op; // alu_ctrl_unit 
 
   wire [`WordBit-1:0] forwardA_mux_out, forwardB_mux_out; // Forwarding Unit 
 
-  wire [`WordBit-1:0] ALUSrc_mux_out, mem_data_out;
+  wire [`WordBit-1:0] mem_data_out; // Dmem
 
-  wire [4:0] rs1_in;
+  wire PCSrc1, PCSrc2, miss; // Miss Prediction Unit, PC signal
+
+
 
   /***** Register declarations *****/
   // You need to modify the width of registers
@@ -45,15 +51,24 @@ module cpu(input reset,       // positive reset signal
   // 2. You might not need registers described below
   /***** IF/ID pipeline registers *****/
   reg [31:0] IF_ID_inst;           // will be used in ID stage
+  reg [31:0] IF_ID_PC;          // will be used in ID stage
+  reg [31:0] IF_ID_PC_4;          // will be used in  stage
+  reg IF_ID_miss;          // will be used in ID stage
+
   /***** ID/EX pipeline registers *****/
   // From the control unit
   reg [3:0] ID_EX_alu_op;         // will be used in EX stage
   reg ID_EX_alu_src;        // will be used in EX stage
+  reg ID_EX_is_jal;        // will be used in EX stage
+  reg ID_EX_is_jalr;        // will be used in EX stage
+  reg ID_EX_branch;      // will be used in EX stage
   reg ID_EX_mem_write;      // will be used in MEM stage
   reg ID_EX_mem_read;       // will be used in MEM stage
   reg ID_EX_mem_to_reg;     // will be used in WB stage
   reg ID_EX_reg_write;      // will be used in WB stage
-  reg ID_EX_is_halted;
+  reg ID_EX_is_halted;      // will be used in WB stage
+  reg ID_EX_pc_to_reg;      // will be used in WB stage
+
   // From others
   reg [4:0] ID_EX_rs1;  // will be used in hazard detection
   reg [4:0] ID_EX_rs2;  // will be used in hazard detection
@@ -62,34 +77,46 @@ module cpu(input reset,       // positive reset signal
   reg [31:0] ID_EX_imm;
   reg [31:0] ID_EX_ALU_ctrl_unit_input;
   reg [4:0] ID_EX_rd;
+  reg [31:0] ID_EX_PC; 
+  reg [31:0] ID_EX_PC_4;          // will be used in ID stage
+
 
   /***** EX/MEM pipeline registers *****/
   // From the control unit
-  reg EX_MEM_mem_write;     // will be used in MEM stage
-  reg EX_MEM_mem_read;      // will be used in MEM stage
-  reg EX_MEM_is_halted;
-//  reg EX_MEM_is_branch;     // will be used in MEM stage
+  reg EX_MEM_mem_write;      // will be used in MEM stage
+  reg EX_MEM_mem_read;       // will be used in MEM stage
+  reg EX_MEM_is_halted;      // will be used in WB stage
+  reg EX_MEM_pc_to_reg;      // will be used in WB stage
+
   reg EX_MEM_mem_to_reg;    // will be used in WB stage
   reg EX_MEM_reg_write;     // will be used in WB stage
   // From others
   reg [31:0] EX_MEM_alu_out;
   reg [31:0] EX_MEM_dmem_data;
   reg [4:0] EX_MEM_rd;
+  reg [31:0] EX_MEM_PC_4;          // will be used in ID stage
+
 
   /***** MEM/WB pipeline registers *****/
   // From the control unit
   reg MEM_WB_mem_to_reg;    // will be used in WB stage
   reg MEM_WB_reg_write;     // will be used in WB stage
-  reg MEM_WB_is_halted;
+  reg MEM_WB_is_halted;     // will be used in WB stage
+  reg MEM_WB_pc_to_reg;     // will be used in WB stage
+
   // From others
   reg [31:0] MEM_WB_mem_to_reg_src_1;
   reg [31:0] MEM_WB_mem_to_reg_src_2;
   reg [4:0] MEM_WB_rd;
+  reg [31:0] MEM_WB_PC_4;          // will be used in ID stage
 
 
   assign rs1_in = is_ecall ? 17 : IF_ID_inst[19:15];
   assign rs1_17 = EX_MEM_rd == 17 ? EX_MEM_alu_out : rs1_dout; // data forwarding
   assign is_halted = MEM_WB_is_halted;
+  assign PCSrc1 = ID_EX_is_jal || ( ID_EX_branch && alu_bcond);
+  assign PCSrc2 = ID_EX_is_jalr;
+
 
   // ---------- Update program counter ----------
   // PC must be updated on the rising edge (positive edge) of the clock.
@@ -101,11 +128,41 @@ module cpu(input reset,       // positive reset signal
     .current_pc(current_pc)   // output
   );  
 
-  // ---------- Adder -----------
+  // ----------- Branch Predictor ------------
+  BranchPredictor branch_predictor(
+    .current_pc(current_pc),
+    .pred_pc(pred_pc)
+  );
+
+  // ---------- PCSrc1 mux -------------
+  mux_2_to_1 PCSrc1_mux (
+    .A (pc_4_out),    // input
+    .B (next_pc_jump),  // input
+    .Enable (PCSrc1),   // input
+    .C (PCSrc1_mux_out)    // output
+  );
+
+  // ---------- PCSrc2 mux -------------
+  mux_2_to_1 PCSrc2_mux (
+    .A (PCSrc1_mux_out),    // input
+    .B (alu_result),  // input
+    .Enable (PCSrc2),   // input
+    .C (actual_pc)    // output
+  );
+
+  // ---------- miss mux -------------
+  mux_2_to_1 miss_mux (
+    .A (pred_pc),    // input
+    .B (actual_pc),  // input
+    .Enable (miss),   // input
+    .C (next_pc)    // output
+  );
+
+  // ---------- ADD_PC_4 Adder -----------
   adder Add_PC_4(
     .in_1(current_pc),  // input
     .in_2(4),  // input
-    .out(next_pc)    //output
+    .out(pc_4_out)    //output
   );
   
   // ---------- Instruction Memory ----------
@@ -120,9 +177,15 @@ module cpu(input reset,       // positive reset signal
   always @(posedge clk) begin
     if (reset) begin
       IF_ID_inst <= 0; 
+      IF_ID_PC <= 0;
+      IF_ID_PC_4 <= 0;
+      IF_ID_miss <= 0;
     end
     else if (IF_ID_inst_write) begin
       IF_ID_inst <= dout; 
+      IF_ID_PC <= current_pc;
+      IF_ID_PC_4 <= pc_4_out;
+      IF_ID_miss <= miss;
     end
   end
 
@@ -139,6 +202,15 @@ module cpu(input reset,       // positive reset signal
     .PCWrite(PCWrite)   //output
   );
 
+  // ---------- pc_to_reg mux -------------
+  mux_2_to_1 pc_to_reg_mux (
+    .A (rd_din),    // input
+    .B (MEM_WB_PC_4),  // input
+    .Enable (MEM_WB_pc_to_reg),   // input
+    .C (pc_to_reg_mux_out)    // output
+  );
+
+
 
   // ---------- Register File ----------
   RegisterFile reg_file (
@@ -147,7 +219,7 @@ module cpu(input reset,       // positive reset signal
     .rs1 (rs1_in),          // input
     .rs2 (IF_ID_inst[24:20]),          // input
     .rd (MEM_WB_rd),           // input  
-    .rd_din (rd_din),       // input
+    .rd_din (pc_to_reg_mux_out),       // input
     .write_enable (MEM_WB_reg_write),    // input
     .rs1_dout (rs1_dout),     // output
     .rs2_dout (rs2_dout),      // output
@@ -158,6 +230,9 @@ module cpu(input reset,       // positive reset signal
   // ---------- Control Unit ----------
   ControlUnit ctrl_unit (
     .part_of_inst (IF_ID_inst[6:0]),  // input
+    .is_jal(is_jal),      // output
+    .is_jalr(is_jalr),      // output
+    .branch(branch),      // output
     .mem_read (mem_read),      // output
     .mem_to_reg (mem_to_reg),    // output
     .mem_write (mem_write),     // output
@@ -178,12 +253,16 @@ module cpu(input reset,       // positive reset signal
 
     ID_EX_is_halted <= is_ecall && (rs1_17 == 10);
 
-    if (reset || is_hazard) begin
+    if (reset || is_hazard || miss || IF_ID_miss ) begin
+      ID_EX_is_jal <= 0;
+      ID_EX_is_jalr <= 0;
       ID_EX_alu_src <= 0;      
       ID_EX_mem_write <= 0;    
       ID_EX_mem_read <= 0;     
       ID_EX_mem_to_reg <= 0;   
-      ID_EX_reg_write <= 0;    
+      ID_EX_reg_write <= 0;   
+      ID_EX_branch <= 0;
+      ID_EX_pc_to_reg <= 0;
       ID_EX_rs1 <= 0;  
       ID_EX_rs2 <= 0;  
       ID_EX_rs1_data <= 0;
@@ -191,13 +270,19 @@ module cpu(input reset,       // positive reset signal
       ID_EX_imm <= 0;
       ID_EX_ALU_ctrl_unit_input <= 0;
       ID_EX_rd <= 0;
+      ID_EX_PC <= 0;
+      ID_EX_PC_4 <= 0;
     end
     else begin
+      ID_EX_is_jal <= is_jal;
+      ID_EX_is_jalr <= is_jalr;
       ID_EX_alu_src <= alu_src;      
       ID_EX_mem_write <= mem_write;    
       ID_EX_mem_read <= mem_read;     
       ID_EX_mem_to_reg <= mem_to_reg;   
-      ID_EX_reg_write <= write_enable;    
+      ID_EX_reg_write <= write_enable;   
+      ID_EX_branch <= branch;
+      ID_EX_pc_to_reg <= pc_to_reg; 
       ID_EX_rs1 <= IF_ID_inst[19:15];  
       ID_EX_rs2 <= IF_ID_inst[24:20];  
       ID_EX_rs1_data <= rs1_dout;
@@ -205,8 +290,17 @@ module cpu(input reset,       // positive reset signal
       ID_EX_imm <= imm_gen_out;
       ID_EX_ALU_ctrl_unit_input <= IF_ID_inst;
       ID_EX_rd <= IF_ID_inst[11:7];
+      ID_EX_PC <= IF_ID_PC;
+      ID_EX_PC_4 <= IF_ID_PC_4;
     end
   end
+
+  //----------- MissDetection unit---------
+  MissDetectionUnit Miss_Detection_Unit (
+    .IF_ID_PC(IF_ID_PC),      // input
+    .actual_pc(actual_pc),      // input
+    .miss(miss)      // output
+  );
 
   // ---------- Forwarding unit ----------
   ForwardingUnit forwarding_unit (
@@ -254,6 +348,13 @@ module cpu(input reset,       // positive reset signal
     .alu_op(alu_op)         // output
   );
 
+  // ---------- Adder -----------
+  adder Add_jump_address(
+    .in_1(ID_EX_PC),  // input
+    .in_2(ID_EX_imm),  // input // 근데 shift left 안 해도 괜찮음?????설계도엔 표시 되어있음
+    .out(next_pc_jump)    //output
+  );
+
   // ---------- ALU ----------
   ALU alu (
     .alu_op(alu_op),      // input
@@ -272,19 +373,23 @@ module cpu(input reset,       // positive reset signal
       EX_MEM_mem_write <= 0;     
       EX_MEM_mem_read <= 0;      
       EX_MEM_mem_to_reg <= 0;    
+      EX_MEM_pc_to_reg <= 0;
       EX_MEM_reg_write <= 0;     
       EX_MEM_alu_out <= 0;
       EX_MEM_dmem_data <= 0;
       EX_MEM_rd <= 0;
+      EX_MEM_PC_4 <= 0;
     end
     else begin
       EX_MEM_mem_write <= ID_EX_mem_write;     
       EX_MEM_mem_read <= ID_EX_mem_read;      
-      EX_MEM_mem_to_reg <= ID_EX_mem_to_reg;    
+      EX_MEM_mem_to_reg <= ID_EX_mem_to_reg;   
+      EX_MEM_pc_to_reg <= ID_EX_pc_to_reg; 
       EX_MEM_reg_write <= ID_EX_reg_write;     
       EX_MEM_alu_out <= alu_result;
       EX_MEM_dmem_data <= forwardB_mux_out;
       EX_MEM_rd <= ID_EX_rd;
+      EX_MEM_PC_4 <= ID_EX_PC_4;
     end
   end
 
@@ -310,6 +415,8 @@ module cpu(input reset,       // positive reset signal
       MEM_WB_mem_to_reg_src_1 <= 0;
       MEM_WB_mem_to_reg_src_2 <= 0;
       MEM_WB_rd <= 0;
+      MEM_WB_PC_4 <= 0;
+      MEM_WB_pc_to_reg <= 0;
     end
     else begin
       MEM_WB_mem_to_reg <= EX_MEM_mem_to_reg;   
@@ -317,6 +424,8 @@ module cpu(input reset,       // positive reset signal
       MEM_WB_mem_to_reg_src_1 <= EX_MEM_alu_out;
       MEM_WB_mem_to_reg_src_2 <= mem_data_out;
       MEM_WB_rd <= EX_MEM_rd;
+      MEM_WB_PC_4 <= EX_MEM_PC_4;
+      MEM_WB_pc_to_reg <= EX_MEM_pc_to_reg;
     end
   end
 
