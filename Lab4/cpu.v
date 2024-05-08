@@ -17,7 +17,7 @@ module cpu(input reset,       // positive reset signal
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
   // Control unit
-  reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch;
+  reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch, actual_taken;
   reg [1:0] alu_src_B;
 // 왜 이전엔 reg로 설정되어 있는지 
   wire [1:0] forwardA, forwardB; // Forwarding Unit
@@ -358,9 +358,22 @@ module cpu(input reset,       // positive reset signal
     .C (actual_pc)    // output
   );
 
+  always @(*) begin
+    // calculate branch target and condition
+    if (ID_EX_is_jal || (ID_EX_branch && alu_bcond)) begin
+        actual_taken = 1;
+    end
+    else if (ID_EX_is_jalr) begin
+        actual_taken = 1;
+    end
+    else begin
+        actual_taken = 0;
+    end
+  end
+
   //----------- MissDetection unit---------
   MissDetectionUnit Miss_Detection_Unit (
-    .reset (reset), // input
+    .actual_taken (actual_taken),   // input
     .ID_EX_pred_PC (ID_EX_pred_PC),      // input
     .actual_pc (actual_pc),      // input
     .miss (miss)      // output
