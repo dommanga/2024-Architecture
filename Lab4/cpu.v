@@ -17,7 +17,7 @@ module cpu(input reset,       // positive reset signal
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
   // Control unit
-  reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch, actual_taken;
+  reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch, actual_taken, pred_taken, update_B_history, update_B_target;
   reg [1:0] alu_src_B;
 // 왜 이전엔 reg로 설정되어 있는지 
   wire [1:0] forwardA, forwardB; // Forwarding Unit
@@ -56,6 +56,7 @@ module cpu(input reset,       // positive reset signal
   reg [31:0] IF_ID_PC;          // will be used in ID stage
   reg [31:0] IF_ID_pred_PC;          // will be used in EX stage
   reg IF_ID_miss;          // will be used in ID stage
+  reg IF_ID_pred_taken;          // will be used in EX stage
 
   /***** ID/EX pipeline registers *****/
   // From the control unit
@@ -81,6 +82,7 @@ module cpu(input reset,       // positive reset signal
   reg [4:0] ID_EX_rd;
   reg [31:0] ID_EX_PC; 
   reg [31:0] ID_EX_pred_PC;          // will be used in EX stage
+  reg ID_EX_pred_taken;
 
 
   /***** EX/MEM pipeline registers *****/
@@ -129,9 +131,17 @@ module cpu(input reset,       // positive reset signal
   );  
 
   // ----------- Branch Predictor ------------
-  BranchPredictor_old branch_predictor(
-    .current_pc(current_pc),
-    .pred_pc(pred_pc)
+  BranchPredictor branch_predictor(
+    .reset (reset),   // input
+    .clk (clk),   // input
+    .current_pc (current_pc),   // input
+    .update_B_history (update_B_history),   // input
+    .update_B_target (update_B_target),   // input
+    .ID_EX_PC (ID_EX_PC),   // input
+    .actual_pc (actual_pc),   // input
+    .actual_taken (actual_taken),   // input
+    .pred_taken (pred_taken),   // output
+    .pred_pc (pred_pc)   // output
   );
 
   // ---------- miss mux -------------
@@ -157,12 +167,14 @@ module cpu(input reset,       // positive reset signal
       IF_ID_PC <= 0;
       IF_ID_miss <= 0;
       IF_ID_pred_PC <= 0;
+      IF_ID_pred_taken <= 0;
     end
     else if (IF_ID_inst_write) begin
       IF_ID_inst <= dout; 
       IF_ID_PC <= current_pc;
       IF_ID_miss <= miss;
       IF_ID_pred_PC <= pred_pc;
+      IF_ID_pred_taken <= pred_taken;
     end
   end
 
@@ -240,6 +252,7 @@ module cpu(input reset,       // positive reset signal
       ID_EX_rd <= 0;
       ID_EX_PC <= 0;
       ID_EX_pred_PC <= 0;
+      ID_EX_pred_taken <= 0;
     end
     else begin
       ID_EX_is_jal <= is_jal;
@@ -260,6 +273,7 @@ module cpu(input reset,       // positive reset signal
       ID_EX_rd <= IF_ID_inst[11:7];
       ID_EX_PC <= IF_ID_PC;
       ID_EX_pred_PC <= IF_ID_pred_PC;
+      ID_EX_pred_taken <= IF_ID_pred_taken;
     end
   end
 
@@ -327,53 +341,26 @@ module cpu(input reset,       // positive reset signal
     .alu_result(alu_result),  // output
     .alu_bcond(alu_bcond)     // output
   );
-  
-  // ---------- ADD_PC_4 Adder -----------
-  adder Add_PC_4(
-    .in_1(ID_EX_PC),  // input
-    .in_2(4),  // input
-    .out(pc_4_out)    //output
-  );
 
-  // ---------- Adder -----------
-  adder Add_jump_address(
-    .in_1(ID_EX_PC),  // input
-    .in_2(ID_EX_imm),  // input // 근데 shift left 안 해도 괜찮음?????설계도엔 표시 되어있음
-    .out(next_pc_jump)    //output
+  // ---------- BranchCalculator ----------
+  BranchCalculator branch_calculator(
+    .ID_EX_PC (ID_EX_PC),  // input
+    .ID_EX_rs1_data (ID_EX_rs1_data),  // input
+    .ID_EX_imm (ID_EX_imm),  // input
+    .alu_bcond (alu_bcond),  // input
+    .ID_EX_branch (ID_EX_branch),  // input
+    .ID_EX_is_jal (ID_EX_is_jal),  // input
+    .ID_EX_is_jalr (ID_EX_is_jalr), // input
+    .actual_pc (actual_pc), // output
+    .actual_taken (actual_taken),  // output
+    .update_B_history (update_B_history),  // output
+    .update_B_target (update_B_target)  // output
   );
-
-  // ---------- PCSrc1 mux -------------
-  mux_2_to_1 PCSrc1_mux (
-    .A (pc_4_out),    // input
-    .B (next_pc_jump),  // input
-    .Enable (PCSrc1),   // input
-    .C (PCSrc1_mux_out)    // output
-  );
-
-  // ---------- PCSrc2 mux -------------
-  mux_2_to_1 PCSrc2_mux (
-    .A (PCSrc1_mux_out),    // input
-    .B (ID_EX_rs1_data + ID_EX_imm),  // input
-    .Enable (PCSrc2),   // input
-    .C (actual_pc)    // output
-  );
-
-  always @(*) begin
-    // calculate branch target and condition
-    if (ID_EX_is_jal || (ID_EX_branch && alu_bcond)) begin
-        actual_taken = 1;
-    end
-    else if (ID_EX_is_jalr) begin
-        actual_taken = 1;
-    end
-    else begin
-        actual_taken = 0;
-    end
-  end
 
   //----------- MissDetection unit---------
   MissDetectionUnit Miss_Detection_Unit (
     .actual_taken (actual_taken),   // input
+    .ID_EX_pred_taken (ID_EX_pred_taken),   // input
     .ID_EX_pred_PC (ID_EX_pred_PC),      // input
     .actual_pc (actual_pc),      // input
     .miss (miss)      // output

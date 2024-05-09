@@ -30,12 +30,11 @@ void next_cycle(Vtop *dut, VerilatedVcdC *m_trace)
 int main(int argc, char **argv, char **env)
 {
     // TO DO : CHANGE "filename" TO PROVIDED "answer_*.txt" PATH
+    // string filename = "/home/jimin/2024-Architecture/Lab4/student_tb/answer_basic.txt";
+    // string filename = "/home/jimin/2024-Architecture/Lab4/student_tb/answer_ifelse.txt";
+    // string filename = "/home/jimin/2024-Architecture/Lab4/student_tb/answer_loop.txt";
+    // string filename = "/home/jimin/2024-Architecture/Lab4/student_tb/answer_non-controlflow.txt";
     string filename = "/home/jimin/2024-Architecture/Lab4/student_tb/answer_recursive.txt";
-    //  /root/2024-Architecture/Lab4/student_tb/answer_basic.txt
-    //  /root/2024-Architecture/Lab4/student_tb/answer_ifelse.txt
-    //  /root/2024-Architecture/Lab4/student_tb/answer_loop.txt
-    //  /root/2024-Architecture/Lab4/student_tb/answer_non-controlflow.txt
-    //  /root/2024-Architecture/Lab4/student_tb/answer_recursive.txt
     ifstream file(filename);
     stringstream ss;
     string reg_hex;
