@@ -19,31 +19,34 @@ module cpu(input reset,       // positive reset signal
   // Control unit
   reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch, actual_taken, pred_taken, update_B_history, update_B_target;
   reg [1:0] alu_src_B;
-// 왜 이전엔 reg로 설정되어 있는지 
-  wire [1:0] forwardA, forwardB; // Forwarding Unit
 
-  wire [`WordBit-1:0] next_pc, current_pc, dout; // PC, Imem, Branch Predictor
+  // Forwarding Unit
+  wire [1:0] forwardA, forwardB;
+  wire [`WordBit-1:0] forwardA_mux_out, forwardB_mux_out;
 
-  wire [`WordBit-1:0] next_pc_jump, PCSrc1_mux_out, pc_4_out, actual_pc, pred_pc; // PC Value
+  // PC, Imem, Branch Predictor
+  wire [`WordBit-1:0] next_pc, current_pc, dout;
 
-  wire [`WordBit-1:0] rd_din, rs1_dout, rs2_dout, rs1_17,  pc_to_reg_mux_out; // Register File
+ // PC Value
+  wire [`WordBit-1:0] actual_pc, pred_pc;
 
-  wire [4:0] rs1_in; // Register File 
+ // Register File
+  wire [`WordBit-1:0] rd_din, rs1_dout, rs2_dout, rs1_17;
+  wire [4:0] rs1_in;
 
-  wire [`WordBit-1:0] imm_gen_out; // Imm
+  // immediate value
+  wire [`WordBit-1:0] imm_gen_out;
 
-  wire [`WordBit-1:0] alu_result, ALUSrc_A_mux_out, ALUSrc_B_mux_out; // alu
+  // ALU
+  wire [`WordBit-1:0] alu_result, ALUSrc_A_mux_out, ALUSrc_B_mux_out;
+  wire alu_bcond;
 
-  wire alu_bcond; // alu
-
-  wire [3:0] alu_op; // alu_ctrl_unit 
-
-  wire [`WordBit-1:0] forwardA_mux_out, forwardB_mux_out; // Forwarding Unit 
+  // alu ctrl unit
+  wire [3:0] alu_op; 
 
   wire [`WordBit-1:0] mem_data_out; // Dmem
 
-  wire PCSrc1, PCSrc2, miss; // Miss Prediction Unit, PC signal
-
+  wire miss; // Miss Prediction Unit signal
 
 
   /***** Register declarations *****/
@@ -60,7 +63,6 @@ module cpu(input reset,       // positive reset signal
 
   /***** ID/EX pipeline registers *****/
   // From the control unit
-  reg [3:0] ID_EX_alu_op;         // will be used in EX stage
   reg [1:0] ID_EX_alu_src_B;        // will be used in EX stage
   reg ID_EX_is_jal;        // will be used in EX stage
   reg ID_EX_is_jalr;        // will be used in EX stage
@@ -116,8 +118,6 @@ module cpu(input reset,       // positive reset signal
   assign rs1_in = is_ecall ? 17 : IF_ID_inst[19:15];
   assign rs1_17 = EX_MEM_rd == 17 ? EX_MEM_alu_out : rs1_dout; // data forwarding
   assign is_halted = MEM_WB_is_halted;
-  assign PCSrc1 = ID_EX_is_jal || ( ID_EX_branch && alu_bcond);
-  assign PCSrc2 = ID_EX_is_jalr;
 
 
   // ---------- Update program counter ----------
