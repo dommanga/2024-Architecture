@@ -6,8 +6,7 @@ module Cache #(parameter LINE_SIZE = 16,
 
     input is_input_valid,
     input [31:0] addr,
-    input mem_read,
-    input mem_write,
+    input mem_rw,
     input [31:0] din,
 
     output is_ready,
@@ -18,8 +17,6 @@ module Cache #(parameter LINE_SIZE = 16,
   wire is_data_mem_ready;
   // Reg declarations
   // You might need registers to keep the status.
-
-  assign is_ready = is_data_mem_ready;
 
   // Instantiate data memory
   DataMemory #(.BLOCK_SIZE(LINE_SIZE)) data_mem(
