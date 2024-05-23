@@ -16,9 +16,16 @@ module cpu(input reset,       // positive reset signal
   /***** Wire declarations *****/
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
+  // Cache unit
+  wire is_hit, is_ready, is_input_valid, mem_rw, is_output_valid;
+  wire [`WordBit-1:0] Cache_d_out;
+  wire is_stall // stall the whole pipeline registers when Cache needs Write/Read 
+ 
+ 
   // Control unit
   reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch, actual_taken, pred_taken, update_B_history, update_B_target;
   reg [1:0] alu_src_B;
+ 
 
   // Forwarding Unit
   wire [1:0] forwardA, forwardB;
@@ -176,6 +183,15 @@ module cpu(input reset,       // positive reset signal
       IF_ID_pred_PC <= pred_pc;
       IF_ID_pred_taken <= pred_taken;
     end
+    else if(is_stall) begin
+      IF_ID_inst <= IF_ID_inst; 
+      IF_ID_PC <= IF_ID_PC;
+      IF_ID_miss <= IF_ID_miss;
+      IF_ID_pred_PC <= IF_ID_pred_PC;
+      IF_ID_pred_taken <= IF_ID_pred_taken;
+    end
+    else // 아무것도 구현 안 해도 괜찮음?
+
   end
 
   // --------- Hazard Detection Unit --------- 
@@ -253,6 +269,27 @@ module cpu(input reset,       // positive reset signal
       ID_EX_PC <= 0;
       ID_EX_pred_PC <= 0;
       ID_EX_pred_taken <= 0;
+    end
+    else if(is_stall) begin
+      ID_EX_is_jal <= ID_EX_is_jal;
+      ID_EX_is_jalr <= ID_EX_is_jalr;
+      ID_EX_alu_src_B <= ID_EX_alu_src_B;      
+      ID_EX_mem_write <= ID_EX_mem_write;    
+      ID_EX_mem_read <= ID_EX_mem_read;     
+      ID_EX_mem_to_reg <= ID_EX_mem_to_reg;   
+      ID_EX_reg_write <= ID_EX_reg_write;   
+      ID_EX_branch <= ID_EX_branch;
+      ID_EX_pc_to_reg <= ID_EX_pc_to_reg; 
+      ID_EX_rs1 <= ID_EX_rs1;  
+      ID_EX_rs2 <= ID_EX_rs2;  
+      ID_EX_rs1_data <= ID_EX_rs1_data;
+      ID_EX_rs2_data <= ID_EX_rs2_data;
+      ID_EX_imm <= ID_EX_imm;
+      ID_EX_ALU_ctrl_unit_input <= ID_EX_ALU_ctrl_unit_input;
+      ID_EX_rd <= ID_EX_rd;
+      ID_EX_PC <= ID_EX_PC;
+      ID_EX_pred_PC <= ID_EX_pred_PC;
+      ID_EX_pred_taken <= ID_EX_pred_taken;
     end
     else begin
       ID_EX_is_jal <= is_jal;
@@ -380,7 +417,18 @@ module cpu(input reset,       // positive reset signal
       EX_MEM_rd <= 0;
       EX_MEM_is_halted <= 0;
     end
-    else begin
+    else if(is_stall) begin
+      EX_MEM_mem_write <= EX_MEM_mem_write;     
+      EX_MEM_mem_read <= EX_MEM_mem_read;      
+      EX_MEM_mem_to_reg <= EX_MEM_mem_to_reg;   
+      EX_MEM_pc_to_reg <= EX_MEM_pc_to_reg; 
+      EX_MEM_reg_write <= EX_MEM_reg_write;     
+      EX_MEM_alu_out <= EX_MEM_alu_out;
+      EX_MEM_dmem_data <= EX_MEM_dmem_data;
+      EX_MEM_rd <= EX_MEM_rd;
+      EX_MEM_is_halted <= EX_MEM_is_halted;
+    end
+      else begin
       EX_MEM_mem_write <= ID_EX_mem_write;     
       EX_MEM_mem_read <= ID_EX_mem_read;      
       EX_MEM_mem_to_reg <= ID_EX_mem_to_reg;   
@@ -393,15 +441,19 @@ module cpu(input reset,       // positive reset signal
     end
   end
 
-  // ---------- Data Memory ----------
-  DataMemory dmem (
-    .reset (reset),      // input
-    .clk (clk),        // input
-    .addr (EX_MEM_alu_out),       // input
-    .din (EX_MEM_dmem_data),        // input
-    .mem_read (EX_MEM_mem_read),   // input
-    .mem_write (EX_MEM_mem_write),  // input
-    .dout (mem_data_out)        // output
+  //----------- Cache unit ---------
+  Cache cache (
+    .reset (reset),   // input
+    .clk (clk),   // input
+    .is_input_valid (is_input_valid),   // input
+    .addr (EX_MEM_alu_out),   // input  
+    .mem_rw (mem_rw),      // input
+    .din (EX_MEM_dmem_data),      // input
+    .is_ready (is_ready),      // output
+    .is_output_valid (is_output_valid),      // output
+    .dout (Cache_d_out),      // output
+    .is_hit (is_hit),      // output
+    .is_stall (is_stall)     // output
   );
 
   // Update MEM/WB pipeline registers here
@@ -415,6 +467,15 @@ module cpu(input reset,       // positive reset signal
       MEM_WB_rd <= 0;
       MEM_WB_pc_to_reg <= 0;
       MEM_WB_is_halted <= 0;
+    end
+    else if( is_stall )begin
+      MEM_WB_mem_to_reg <= MEM_WB_mem_to_reg;   
+      MEM_WB_reg_write <= MEM_WB_reg_write;    
+      MEM_WB_mem_to_reg_src_1 <= MEM_WB_mem_to_reg_src_1;
+      MEM_WB_mem_to_reg_src_2 <= MEM_WB_mem_to_reg_src_2;
+      MEM_WB_rd <= MEM_WB_rd;
+      MEM_WB_pc_to_reg <= MEM_WB_pc_to_reg;
+      MEM_WB_is_halted <= MEM_WB_is_halted;
     end
     else begin
       MEM_WB_mem_to_reg <= EX_MEM_mem_to_reg;   
