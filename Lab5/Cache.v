@@ -1,4 +1,6 @@
 
+`include "CLOG2.v"
+
 `define S_IDLE 2'b00 
 `define S_CMP 2'b01 
 `define S_ALLOC 2'b10 
@@ -6,10 +8,10 @@
 
 
 module Cache #(parameter LINE_SIZE = 16,
-               parameter NUM_SETS = 8
-               parameter NUM_WAYS = 2
-               parameter TAG_SIZE = 25
-               parameter IDX_SIZE = 3
+               parameter NUM_SETS = 8,
+               parameter NUM_WAYS = 2,
+               parameter TAG_SIZE = 25,
+               parameter IDX_SIZE = 3,
                parameter B_OFFSET = 2) (
     input reset,
     input clk,
@@ -20,7 +22,7 @@ module Cache #(parameter LINE_SIZE = 16,
     input [31:0] din,
 
     output is_ready,
-    output is_output_valid,
+    output reg is_output_valid,
     output [31:0] dout,
     output is_hit);
 
@@ -29,7 +31,7 @@ module Cache #(parameter LINE_SIZE = 16,
   // Wire declarations
   wire is_dmem_ready;
   wire is_dmem_output_valid;
-  wire clog2 = `CLOG2(LINE_SIZE);
+  wire [3:0] clog2 = `CLOG2(LINE_SIZE);
   wire [LINE_SIZE * 8 - 1:0] dout_dmem;
 
   wire [TAG_SIZE - 1:0] tag = addr[31:7];
@@ -37,6 +39,8 @@ module Cache #(parameter LINE_SIZE = 16,
   wire [B_OFFSET - 1:0] bo = addr[3:2];
   wire [LINE_SIZE * 8 - 1:0] data_BUS;
   wire hit_way; // will be used only when is_hit is true.
+
+  wire is_output_valid_temp;
 
   // Reg declarations
   reg [1:0] current_state;
@@ -53,7 +57,7 @@ module Cache #(parameter LINE_SIZE = 16,
   reg flip_LRU, cache_write, is_dmem_input_valid, dmem_read, dmem_write, cache_alloc, cache_clean;
 
   assign is_ready = (current_state == `S_IDLE);
-  assign is_output_valid = (current_state == `S_CMP) && is_hit; // we have valid output (cache hit)
+  assign is_output_valid_temp = (current_state == `S_CMP) && is_hit; // we have valid output (cache hit)
   assign is_hit =
   (tag == TagBank[idx][0] && is_valid[idx][0]) ||
   (tag == TagBank[idx][1] && is_valid[idx][1]);
@@ -104,23 +108,22 @@ module Cache #(parameter LINE_SIZE = 16,
   // asynchronous Control siganls (cache controller)
   always @(*) begin
 
+    // initialize control signals.
+    flip_LRU = 0;
+    cache_write = 0;
+    is_dmem_input_valid = 0;
+    cache_alloc = 0;
+    cache_clean = 0;
+    
     case (current_state)
-      `S_IDLE:
+
       `S_CMP: begin
         if (is_hit) begin
           if (hit_way == LRU[idx])
             flip_LRU = 1;
-          else
-            flip_LRU = 0;
           
           if (mem_rw == 1) // write
             cache_write = 1;
-          else
-            cache_write = 0;
-        end
-        else begin
-          flip_LRU = 0;
-          cache_write = 0;
         end
       end
 
@@ -129,11 +132,9 @@ module Cache #(parameter LINE_SIZE = 16,
         addr_dmem = addr;
         dmem_read = 1;
         dmem_write = 0;
-      
+
         if (is_dmem_output_valid)
           cache_alloc = 1;
-        else
-          cache_alloc = 0;
       end
 
       `S_WB: begin
@@ -142,14 +143,19 @@ module Cache #(parameter LINE_SIZE = 16,
         dmem_read = 0;
         dmem_write = 1;
         din_dmem = DataBank[idx][LRU[idx]];
-
+        
         if (is_dmem_ready)
           cache_clean = 1;
-        else
-          cache_clean = 0;
       end
 
-      default: 
+      default: begin
+        flip_LRU = 0;
+        cache_write = 0;
+        is_dmem_input_valid = 0;
+        cache_alloc = 0;
+        cache_clean = 0;
+      end
+    
     endcase
   end
 
@@ -163,7 +169,8 @@ module Cache #(parameter LINE_SIZE = 16,
 
   // synchronously update cache information with control sigs.
   always @(posedge clk) begin
-    if (reset)
+    if (reset) begin
+      is_output_valid <= 0;
       for (i = 0; i < NUM_SETS; i = i + 1) begin
             /* verilator lint_off BLKSEQ */
             TagBank[i][0] = 25'b0;
@@ -181,7 +188,10 @@ module Cache #(parameter LINE_SIZE = 16,
             LRU[i] = 0;
             /* verilator lint_on BLKSEQ */
       end
+    end
     else begin
+      is_output_valid <= is_output_valid_temp;
+
       if (flip_LRU)
         LRU[idx] <= ~LRU[idx];
       
@@ -217,7 +227,7 @@ module Cache #(parameter LINE_SIZE = 16,
     .reset(reset),
     .clk(clk),
 
-    .is_input_valid(is_data_mem_input_valid),
+    .is_input_valid(is_dmem_input_valid),
     .addr(addr_dmem >> clog2),        // NOTE: address must be shifted by CLOG2(LINE_SIZE)
     .mem_read(dmem_read),
     .mem_write(dmem_write),
