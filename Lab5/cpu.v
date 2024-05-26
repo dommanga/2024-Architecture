@@ -12,12 +12,14 @@
 module cpu(input reset,       // positive reset signal
            input clk,         // clock signal
            output is_halted,  // Whehther to finish simulation
-           output [31:0]print_reg[0:31]); // Whehther to finish simulation
+           output [31:0]print_reg[0:31], // Whehther to finish simulation
+           output is_output_valid,
+           output is_hit);
   /***** Wire declarations *****/
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
   // Cache unit
-  wire is_hit, is_ready, is_output_valid, is_input_valid, mem_rw;
+  wire is_ready, is_input_valid, mem_rw;
   wire [`WordBit-1:0] Cache_d_out;
   wire CacheStall; // stall the whole pipeline registers when Cache needs Write/Read 
  

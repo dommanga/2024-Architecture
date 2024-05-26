@@ -69,6 +69,11 @@ int main(int argc, char **argv, char **env)
     while (sim_time < MAX_SIM_TIME)
     {
         next_cycle(dut, m_trace);
+        if (dut->is_output_valid)
+            if (dut->is_hit)
+                hit_count++;
+            else
+                miss_count++;
         if (dut->is_halted == 1)
             break;
     }
@@ -84,7 +89,8 @@ int main(int argc, char **argv, char **env)
     cout << "FINAL REGISTER OUTPUT" << endl;
 
     // Print your Hit ratio
-    //
+
+    cout << "HIT RATIO : " << hit_count << "/" << miss_count + hit_count << " (" << (float)hit_count / (float)(miss_count + hit_count) << " %)" << endl;
 
     for (int i = 0; i < 32; i = i + 1)
     {

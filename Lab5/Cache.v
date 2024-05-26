@@ -56,7 +56,7 @@ module Cache #(parameter LINE_SIZE = 16,
 
   // assignments
   assign is_ready = (next_state == `S_IDLE);
-  assign is_output_valid = (current_state == `S_CMP) && is_hit; // we have valid output (cache hit)
+  assign is_output_valid = (current_state == `S_CMP); // we have valid output (hit or miss info)
   assign is_hit =
   (tag == TagBank[idx][0] && is_valid[idx][0]) ||
   (tag == TagBank[idx][1] && is_valid[idx][1]);
