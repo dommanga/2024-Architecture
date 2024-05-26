@@ -16,9 +16,16 @@ module cpu(input reset,       // positive reset signal
   /***** Wire declarations *****/
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
+  // Cache unit
+  wire is_hit, is_ready, is_output_valid, is_input_valid, mem_rw;
+  wire [`WordBit-1:0] Cache_d_out;
+  wire CacheStall; // stall the whole pipeline registers when Cache needs Write/Read 
+ 
+ 
   // Control unit
   reg is_ecall, mem_read, mem_to_reg, mem_write, write_enable, pc_to_reg, is_jal, is_jalr, branch, actual_taken, pred_taken, update_B_history, update_B_target;
   reg [1:0] alu_src_B;
+ 
 
   // Forwarding Unit
   wire [1:0] forwardA, forwardB;
@@ -118,6 +125,9 @@ module cpu(input reset,       // positive reset signal
   assign rs1_in = is_ecall ? 17 : IF_ID_inst[19:15];
   assign rs1_17 = EX_MEM_rd == 17 ? EX_MEM_alu_out : rs1_dout; // data forwarding
   assign is_halted = MEM_WB_is_halted;
+  assign is_input_valid = EX_MEM_mem_read || EX_MEM_mem_write;
+  assign mem_rw = EX_MEM_mem_write ? 1 : 0;
+  assign CacheStall = is_input_valid && (!is_ready || !is_output_valid || !is_hit);
 
 
   // ---------- Update program counter ----------
@@ -125,7 +135,7 @@ module cpu(input reset,       // positive reset signal
   PC pc(
     .reset(reset),       // input (Use reset to initialize PC. Initial value must be 0)
     .clk(clk),         // input
-    .PCWrite(PCWrite),  // input
+    .PCWrite(PCWrite && !CacheStall),  // input
     .next_pc(next_pc),     // input
     .current_pc(current_pc)   // output
   );  
@@ -162,12 +172,15 @@ module cpu(input reset,       // positive reset signal
 
   // Update IF/ID pipeline registers here
   always @(posedge clk) begin
+
     if (reset) begin
       IF_ID_inst <= 0; 
       IF_ID_PC <= 0;
       IF_ID_miss <= 0;
       IF_ID_pred_PC <= 0;
       IF_ID_pred_taken <= 0;
+    end 
+    else if(CacheStall) begin
     end
     else if (IF_ID_inst_write) begin
       IF_ID_inst <= dout; 
@@ -176,6 +189,7 @@ module cpu(input reset,       // positive reset signal
       IF_ID_pred_PC <= pred_pc;
       IF_ID_pred_taken <= pred_taken;
     end
+   
   end
 
   // --------- Hazard Detection Unit --------- 
@@ -233,7 +247,7 @@ module cpu(input reset,       // positive reset signal
     if (reset) ID_EX_is_halted <= 0;
     else ID_EX_is_halted <= is_ecall && (rs1_17 == 10);
 
-    if (reset || is_hazard || miss || IF_ID_miss ) begin
+    if (reset || (is_hazard && !CacheStall) || miss || IF_ID_miss ) begin
       ID_EX_is_jal <= 0;
       ID_EX_is_jalr <= 0;
       ID_EX_alu_src_B <= 2'b0;      
@@ -253,6 +267,8 @@ module cpu(input reset,       // positive reset signal
       ID_EX_PC <= 0;
       ID_EX_pred_PC <= 0;
       ID_EX_pred_taken <= 0;
+    end
+    else if(CacheStall) begin
     end
     else begin
       ID_EX_is_jal <= is_jal;
@@ -380,6 +396,8 @@ module cpu(input reset,       // positive reset signal
       EX_MEM_rd <= 0;
       EX_MEM_is_halted <= 0;
     end
+    else if(CacheStall) begin
+    end
     else begin
       EX_MEM_mem_write <= ID_EX_mem_write;     
       EX_MEM_mem_read <= ID_EX_mem_read;      
@@ -393,15 +411,18 @@ module cpu(input reset,       // positive reset signal
     end
   end
 
-  // ---------- Data Memory ----------
-  DataMemory dmem (
-    .reset (reset),      // input
-    .clk (clk),        // input
-    .addr (EX_MEM_alu_out),       // input
-    .din (EX_MEM_dmem_data),        // input
-    .mem_read (EX_MEM_mem_read),   // input
-    .mem_write (EX_MEM_mem_write),  // input
-    .dout (mem_data_out)        // output
+  //----------- Cache unit ---------
+  Cache cache (
+    .reset (reset),   // input
+    .clk (clk),   // input
+    .is_input_valid (is_input_valid),   // input
+    .addr (EX_MEM_alu_out),   // input  
+    .mem_rw (mem_rw),      // input
+    .din (EX_MEM_dmem_data),      // input
+    .is_ready (is_ready),        // output
+    .is_output_valid (is_output_valid),      // output
+    .dout (Cache_d_out),      // output
+    .is_hit (is_hit)     // output
   );
 
   // Update MEM/WB pipeline registers here
@@ -416,11 +437,13 @@ module cpu(input reset,       // positive reset signal
       MEM_WB_pc_to_reg <= 0;
       MEM_WB_is_halted <= 0;
     end
+    else if(CacheStall)begin
+    end
     else begin
       MEM_WB_mem_to_reg <= EX_MEM_mem_to_reg;   
       MEM_WB_reg_write <= EX_MEM_reg_write;    
       MEM_WB_mem_to_reg_src_1 <= EX_MEM_alu_out;
-      MEM_WB_mem_to_reg_src_2 <= mem_data_out;
+      MEM_WB_mem_to_reg_src_2 <= Cache_d_out;
       MEM_WB_rd <= EX_MEM_rd;
       MEM_WB_pc_to_reg <= EX_MEM_pc_to_reg;
       MEM_WB_is_halted <= EX_MEM_is_halted;
