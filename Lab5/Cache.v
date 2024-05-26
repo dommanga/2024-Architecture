@@ -21,7 +21,8 @@ module Cache #(parameter LINE_SIZE = 16,
     input mem_rw,
     input [31:0] din,
 
-    output reg is_output_valid,
+    output is_ready,
+    output is_output_valid,
     output [31:0] dout,
     output is_hit);
 
@@ -39,8 +40,6 @@ module Cache #(parameter LINE_SIZE = 16,
   wire [LINE_SIZE * 8 - 1:0] data_BUS;
   wire hit_way; // will be used only when is_hit is true.
 
-  wire is_output_valid_temp;
-
   // Reg declarations
   reg [1:0] current_state;
   reg [1:0] next_state;
@@ -55,7 +54,9 @@ module Cache #(parameter LINE_SIZE = 16,
   reg LRU[0:NUM_SETS - 1];
   reg flip_LRU, cache_write, is_dmem_input_valid, dmem_read, dmem_write, cache_alloc, cache_clean;
 
-  assign is_output_valid_temp = (current_state == `S_CMP) && is_hit; // we have valid output (cache hit)
+  // assignments
+  assign is_ready = (next_state == `S_IDLE);
+  assign is_output_valid = (current_state == `S_CMP) && is_hit; // we have valid output (cache hit)
   assign is_hit =
   (tag == TagBank[idx][0] && is_valid[idx][0]) ||
   (tag == TagBank[idx][1] && is_valid[idx][1]);
@@ -103,7 +104,7 @@ module Cache #(parameter LINE_SIZE = 16,
     endcase
   end
 
-  // asynchronous Control siganls (cache controller)
+  // asynchronous Cache controller
   always @(*) begin
 
     // initialize control signals.
@@ -123,26 +124,37 @@ module Cache #(parameter LINE_SIZE = 16,
           if (mem_rw == 1) // write
             cache_write = 1;
         end
+        else begin // miss - need to set input information to use DMEM
+          if (next_state == `S_WB) begin
+              is_dmem_input_valid = 1;
+              addr_dmem = {TagBank[idx][LRU[idx]], idx,2'b00, 2'b00};
+              dmem_read = 0;
+              dmem_write = 1;
+              din_dmem = DataBank[idx][LRU[idx]];
+          end
+          else begin // next state == `S_ALLOC
+            is_dmem_input_valid = 1;
+            addr_dmem = addr;
+            dmem_read = 1;
+            dmem_write = 0;
+          end
+        end
       end
 
       `S_ALLOC: begin
-        is_dmem_input_valid = 1;
-        addr_dmem = addr;
-        dmem_read = 1;
-        dmem_write = 0;
-
-        if (is_dmem_output_valid)
+        if (is_dmem_ready) // when read(memory) finished
           cache_alloc = 1;
       end
 
-      `S_WB: begin
-        is_dmem_input_valid = 1;
-        addr_dmem = {tag, idx, bo, addr[1:0]};
-        dmem_read = 0;
-        dmem_write = 1;
-        din_dmem = DataBank[idx][LRU[idx]];
-        
-        if (is_dmem_ready)
+      `S_WB: begin //need to set input information to use DMEM
+        if (next_state == `S_ALLOC) begin
+            is_dmem_input_valid = 1;
+            addr_dmem = addr;
+            dmem_read = 1;
+            dmem_write = 0;
+        end
+
+        if (is_dmem_ready) // when write(memory) finished
           cache_clean = 1;
       end
 
@@ -165,10 +177,9 @@ module Cache #(parameter LINE_SIZE = 16,
       current_state <= next_state;
   end
 
-  // synchronously update cache information with control sigs.
+  // synchronously update cache information along the  control sigs.
   always @(posedge clk) begin
     if (reset) begin
-      is_output_valid <= 0;
       for (i = 0; i < NUM_SETS; i = i + 1) begin
             /* verilator lint_off BLKSEQ */
             TagBank[i][0] = 25'b0;
@@ -188,8 +199,6 @@ module Cache #(parameter LINE_SIZE = 16,
       end
     end
     else begin
-      is_output_valid <= is_output_valid_temp;
-
       if (flip_LRU)
         LRU[idx] <= ~LRU[idx];
       

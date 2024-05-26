@@ -17,7 +17,7 @@ module cpu(input reset,       // positive reset signal
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
   // Cache unit
-  wire is_hit, is_output_valid, is_input_valid, mem_rw;
+  wire is_hit, is_ready, is_output_valid, is_input_valid, mem_rw;
   wire [`WordBit-1:0] Cache_d_out;
   wire CacheStall; // stall the whole pipeline registers when Cache needs Write/Read 
  
@@ -127,7 +127,7 @@ module cpu(input reset,       // positive reset signal
   assign is_halted = MEM_WB_is_halted;
   assign is_input_valid = EX_MEM_mem_read || EX_MEM_mem_write;
   assign mem_rw = EX_MEM_mem_write ? 1 : 0;
-  assign CacheStall = is_input_valid && !is_output_valid;
+  assign CacheStall = is_input_valid && (!is_ready || !is_output_valid || !is_hit);
 
 
   // ---------- Update program counter ----------
@@ -247,7 +247,7 @@ module cpu(input reset,       // positive reset signal
     if (reset) ID_EX_is_halted <= 0;
     else ID_EX_is_halted <= is_ecall && (rs1_17 == 10);
 
-    if (reset || is_hazard || miss || IF_ID_miss ) begin
+    if (reset || (is_hazard && !CacheStall) || miss || IF_ID_miss ) begin
       ID_EX_is_jal <= 0;
       ID_EX_is_jalr <= 0;
       ID_EX_alu_src_B <= 2'b0;      
@@ -398,7 +398,7 @@ module cpu(input reset,       // positive reset signal
     end
     else if(CacheStall) begin
     end
-      else begin
+    else begin
       EX_MEM_mem_write <= ID_EX_mem_write;     
       EX_MEM_mem_read <= ID_EX_mem_read;      
       EX_MEM_mem_to_reg <= ID_EX_mem_to_reg;   
@@ -419,6 +419,7 @@ module cpu(input reset,       // positive reset signal
     .addr (EX_MEM_alu_out),   // input  
     .mem_rw (mem_rw),      // input
     .din (EX_MEM_dmem_data),      // input
+    .is_ready (is_ready),        // output
     .is_output_valid (is_output_valid),      // output
     .dout (Cache_d_out),      // output
     .is_hit (is_hit)     // output
