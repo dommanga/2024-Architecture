@@ -21,7 +21,6 @@ module Cache #(parameter LINE_SIZE = 16,
     input mem_rw,
     input [31:0] din,
 
-    output is_ready,
     output reg is_output_valid,
     output [31:0] dout,
     output is_hit);
@@ -56,7 +55,6 @@ module Cache #(parameter LINE_SIZE = 16,
   reg LRU[0:NUM_SETS - 1];
   reg flip_LRU, cache_write, is_dmem_input_valid, dmem_read, dmem_write, cache_alloc, cache_clean;
 
-  assign is_ready = (current_state == `S_IDLE);
   assign is_output_valid_temp = (current_state == `S_CMP) && is_hit; // we have valid output (cache hit)
   assign is_hit =
   (tag == TagBank[idx][0] && is_valid[idx][0]) ||

@@ -17,7 +17,7 @@ module cpu(input reset,       // positive reset signal
   wire PCWrite, is_hazard, IF_ID_inst_write; // Hazard detection unit
 
   // Cache unit
-  wire is_hit, is_ready, is_input_valid, mem_rw, is_output_valid;
+  wire is_hit, is_output_valid, is_input_valid, mem_rw;
   wire [`WordBit-1:0] Cache_d_out;
   wire CacheStall; // stall the whole pipeline registers when Cache needs Write/Read 
  
@@ -126,8 +126,8 @@ module cpu(input reset,       // positive reset signal
   assign rs1_17 = EX_MEM_rd == 17 ? EX_MEM_alu_out : rs1_dout; // data forwarding
   assign is_halted = MEM_WB_is_halted;
   assign is_input_valid = EX_MEM_mem_read || EX_MEM_mem_write;
-  assign mem_rw = EX_MEM_mem_read ? 0 : 1;
-  assign CacheStall = is_input_valid && (!is_ready || !is_output_valid);
+  assign mem_rw = EX_MEM_mem_write ? 1 : 0;
+  assign CacheStall = is_input_valid && !is_output_valid;
 
 
   // ---------- Update program counter ----------
@@ -179,6 +179,8 @@ module cpu(input reset,       // positive reset signal
       IF_ID_miss <= 0;
       IF_ID_pred_PC <= 0;
       IF_ID_pred_taken <= 0;
+    end 
+    else if(CacheStall) begin
     end
     else if (IF_ID_inst_write) begin
       IF_ID_inst <= dout; 
@@ -187,8 +189,7 @@ module cpu(input reset,       // positive reset signal
       IF_ID_pred_PC <= pred_pc;
       IF_ID_pred_taken <= pred_taken;
     end
-    else if(CacheStall) begin
-    end
+   
   end
 
   // --------- Hazard Detection Unit --------- 
@@ -418,7 +419,6 @@ module cpu(input reset,       // positive reset signal
     .addr (EX_MEM_alu_out),   // input  
     .mem_rw (mem_rw),      // input
     .din (EX_MEM_dmem_data),      // input
-    .is_ready (is_ready),      // output
     .is_output_valid (is_output_valid),      // output
     .dout (Cache_d_out),      // output
     .is_hit (is_hit)     // output
@@ -442,7 +442,7 @@ module cpu(input reset,       // positive reset signal
       MEM_WB_mem_to_reg <= EX_MEM_mem_to_reg;   
       MEM_WB_reg_write <= EX_MEM_reg_write;    
       MEM_WB_mem_to_reg_src_1 <= EX_MEM_alu_out;
-      MEM_WB_mem_to_reg_src_2 <= mem_data_out;
+      MEM_WB_mem_to_reg_src_2 <= Cache_d_out;
       MEM_WB_rd <= EX_MEM_rd;
       MEM_WB_pc_to_reg <= EX_MEM_pc_to_reg;
       MEM_WB_is_halted <= EX_MEM_is_halted;
