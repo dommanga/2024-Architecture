@@ -30,8 +30,8 @@ void next_cycle(Vtop *dut, VerilatedVcdC *m_trace)
 int main(int argc, char **argv, char **env)
 {
     // TO DO : CHANGE "filename" TO PROVIDED "answer_*.txt" PATH
-    // string filename = "./student_tb/naive_ripes_result.txt";
-    string filename = "./student_tb/opt_ripes_result.txt";
+    string filename = "./student_tb/naive_ripes_result.txt";
+    // string filename = "./student_tb/opt_ripes_result.txt";
     ifstream file(filename);
     stringstream ss;
     string reg_hex;
@@ -89,8 +89,9 @@ int main(int argc, char **argv, char **env)
     cout << "FINAL REGISTER OUTPUT" << endl;
 
     // Print your Hit ratio
-
-    cout << "HIT RATIO : " << hit_count << "/" << miss_count + hit_count << " (" << (float)hit_count / (float)(miss_count + hit_count) << " %)" << endl;
+    int total_access = hit_count;
+    int hit_access = hit_count - miss_count;
+    cout << "HIT RATIO : " << hit_access << "/" << total_access << " (" << (float)hit_access / (float)(total_access) << ")" << endl;
 
     for (int i = 0; i < 32; i = i + 1)
     {
